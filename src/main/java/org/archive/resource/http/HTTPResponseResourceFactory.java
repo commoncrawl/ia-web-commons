@@ -23,7 +23,6 @@ public class HTTPResponseResourceFactory implements ResourceFactory, ResourceCon
 			ResourceContainer container) 
 	throws ResourceParseException, IOException {
 		try {
-
 			HttpResponse response = parser.parse(is);
 			metaData.putString(PAYLOAD_CONTENT_TYPE, 
 					PAYLOAD_TYPE_HTTP_RESPONSE);

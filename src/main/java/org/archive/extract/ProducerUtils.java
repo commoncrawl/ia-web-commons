@@ -29,7 +29,7 @@ public class ProducerUtils {
 	    wf.setStrict(STRICT_GZ);
 		File file = new File(path);
 
-	    if(path.startsWith("hdfs://")) {
+	    if(path.startsWith("hdfs://") || path.startsWith("s3a://")) {
 	    	String name = file.getName();
 	    	Path fsPath = new Path(path);
 	    	FileSystem fs = fsPath.getFileSystem(new Configuration());

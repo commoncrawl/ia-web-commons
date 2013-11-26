@@ -152,8 +152,11 @@ public class ExtractingResourceFactoryMapper implements ResourceFactoryMapper {
 	}
 	private boolean isHTTPResponseWARCResource(MetaData envelope) {
 		return childFieldEquals(envelope,WARC_HEADER_METADATA,
-				WARCConstants.CONTENT_TYPE,
-				WARCConstants.HTTP_RESPONSE_MIMETYPE);
+				  WARCConstants.CONTENT_TYPE,
+				  WARCConstants.HTTP_RESPONSE_MIMETYPE) ||
+        childFieldEquals(envelope,WARC_HEADER_METADATA,
+            WARCConstants.CONTENT_TYPE,
+            WARCConstants.HTTP_RESPONSE_MIMETYPE_NS);
 	}
 	private boolean isWARCJSONResource(MetaData envelope) {
 		return childFieldEquals(envelope,WARC_HEADER_METADATA,

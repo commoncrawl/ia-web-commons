@@ -75,16 +75,16 @@ public class ResourceRecordReader extends RecordReader<ResourceContext, MetaData
 		if(inputSplit instanceof FileSplit) {
 			FileSplit fs = (FileSplit) inputSplit;
 			Path fsPath = fs.getPath();
-	    	FileSystem fSys = fsPath.getFileSystem(context.getConfiguration());
-	    	FSDataInputStream fsdis = fSys.open(fsPath);
-	    	String path = fsPath.getName();
-	    	name = fsPath.getName();
-	    	stream = new HDFSStream(fsdis);
-	    	startOffset = fs.getStart();
+	    FileSystem fSys = fsPath.getFileSystem(context.getConfiguration());
+	    FSDataInputStream fsdis = fSys.open(fsPath);
+	    String path = fsPath.getName();
+	    name = fsPath.getName();
+	    stream = new HDFSStream(fsdis);
+	    startOffset = fs.getStart();
 			length = fs.getLength();
 			long endOffset = startOffset + length;
 			stream.setOffset(startOffset);	    	
-	    	series = new GZIPMemberSeries(stream, name, startOffset);
+	    series = new GZIPMemberSeries(stream, name, startOffset);
 			GZIPResourceContainer prod = 
 				new GZIPResourceContainer(series,endOffset);
 			ResourceProducer envelope;
@@ -95,8 +95,8 @@ public class ResourceRecordReader extends RecordReader<ResourceContext, MetaData
 			} else {
 				throw new IOException("arguments must be arc.gz or warc.gz");
 			}
-	    	ResourceFactoryMapper mapper = new ExtractingResourceFactoryMapper();
-	    	producer = new ExtractingResourceProducer(envelope, mapper);
+	    ResourceFactoryMapper mapper = new ExtractingResourceFactoryMapper();
+	    producer = new ExtractingResourceProducer(envelope, mapper);
 
 		} else {
 			throw new IOException("Need FileSplit input...");

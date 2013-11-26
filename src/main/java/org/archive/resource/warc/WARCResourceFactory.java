@@ -23,7 +23,6 @@ public class WARCResourceFactory implements ResourceFactory, ResourceConstants {
 			ResourceContainer container) throws ResourceParseException,
 			IOException {
 		try {
-
 			HttpResponse response = parser.parse(is);
 			WARCResource r = new WARCResource(parentMetaData.createChild(ENVELOPE),
 					container, response);

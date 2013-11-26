@@ -29,11 +29,17 @@ public class WATExtractorOutput implements ExtractorOutput {
 	private static int DEFAULT_BUFFER_RAM = 1024 * 1024;
 	private int bufferRAM = DEFAULT_BUFFER_RAM;
 	private final static Charset UTF8 = Charset.forName("UTF-8");
-	
-	public WATExtractorOutput(OutputStream out) {
+  private String outFilename;
+
+  public WATExtractorOutput(OutputStream out) {
+    this(out, null);
+  }
+
+	public WATExtractorOutput(OutputStream out, String filename) {
 		gzW = new GZIPMemberWriter(out);
 		recW = new WARCRecordWriter();
 		wroteFirst = false;
+    outFilename = filename;
 	}
 
 	private CommitedOutputStream getOutput() {
@@ -55,6 +61,11 @@ public class WATExtractorOutput implements ExtractorOutput {
 			// hrm...
 			throw new IOException("Missing Envelope.Format");
 		}
+
+    // remove the text extracts if it exists
+    JSONUtils.removeObject(top, "Envelope.Payload-Metadata.HTTP-Response-Metadata.HTML-Metadata", "Text");
+
+
 		cos = getOutput();
 		if(envelopeFormat.equals("ARC")) {
 			writeARC(cos,top);
@@ -68,16 +79,23 @@ public class WATExtractorOutput implements ExtractorOutput {
 	}
 
 	private void writeWARCInfo(OutputStream recOut, MetaData md) throws IOException {
-		String filename = JSONUtils.extractSingle(md, "Container.Filename");
-		if(filename == null) {
-			throw new IOException("No Container.Filename...");
-		}
+    String filename = outFilename;
+
+    if (filename == null) {
+      filename = JSONUtils.extractSingle(md, "Container.Filename");
+
+      if(filename == null) {
+        throw new IOException("No Container.Filename...");
+      }
+    }
+
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("Software-Info", IAUtils.COMMONS_VERSION);
 		headers.addDateHeader("Extracted-Date", new Date());
+
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		headers.write(baos);
-                recW.writeWARCInfoRecord(recOut,filename,baos.toByteArray());
+    recW.writeWARCInfoRecord(recOut,filename,baos.toByteArray());
 	}
 
 	private String extractOrIO(MetaData md, String path) throws IOException {

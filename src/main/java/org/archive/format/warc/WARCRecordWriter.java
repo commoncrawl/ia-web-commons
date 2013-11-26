@@ -2,18 +2,33 @@ package org.archive.format.warc;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.UUID;
 
 import org.archive.format.http.HttpConstants;
 import org.archive.format.http.HttpHeaders;
+import org.archive.util.Base32;
 import org.archive.util.DateUtils;
 
 public class WARCRecordWriter implements WARCConstants, HttpConstants 
 {
   private static final String SCHEME = "urn:uuid";
   private static final String SCHEME_COLON = SCHEME + ":";
-	
+	private MessageDigest sha1;
+  private Base32 base32;
+
+  public WARCRecordWriter() {
+    try {
+      sha1 = MessageDigest.getInstance("SHA1");
+    } catch (NoSuchAlgorithmException e) {
+      throw new RuntimeException(e);
+    }
+
+    base32 = new Base32();
+  }
+
   /** 
    * Write the headers and contents as a WARC record to the given
    * output stream.
@@ -95,6 +110,29 @@ public class WARCRecordWriter implements WARCConstants, HttpConstants
     
     headers.add(CONTENT_TYPE,"application/json");
     writeRecord(out, headers, contents);
+  }
+
+  public void writeTextConversionRecord( OutputStream out,
+                                       byte[] contents,
+                                       String targetURI,
+                                       Date originalDate,
+                                       String origRecordId) throws IOException
+  {
+    HttpHeaders headers = new HttpHeaders();
+    headers.add(HEADER_KEY_TYPE, WARCRecordType.conversion.name());
+    headers.add(HEADER_KEY_URI, targetURI);
+    headers.add(HEADER_KEY_DATE, DateUtils.getLog14Date(originalDate));
+    headers.add(HEADER_KEY_ID, makeRecordId());
+    headers.add(HEADER_KEY_REFERS_TO, origRecordId);
+    headers.add(HEADER_KEY_BLOCK_DIGEST, contentHash(contents));
+
+    headers.add(CONTENT_TYPE, "text/plain");
+    writeRecord(out, headers, contents);
+  }
+
+  private String contentHash(byte[] content) {
+    sha1.reset();
+    return "sha1:" + base32.encode(sha1.digest(content));
   }
 
   private String makeRecordId() 
