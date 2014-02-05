@@ -408,9 +408,18 @@ public class ExtractingParseObserver implements ParseObserver {
 		}
 	}
 	private void patternCSSExtract(HTMLMetaData data, Pattern pattern, String content) {
-		Matcher m = pattern.matcher(content);
+    String newcontent;
+    int contentLen = content.length();
+    if (contentLen > 100000) {
+      newcontent = content.substring(100000);
+      contentLen = newcontent.length();
+    } else {
+      newcontent = content;
+    }
+
+		Matcher m = pattern.matcher(newcontent);
 		int idx = 0;
-		int contentLen = content.length();
+
 		while((idx < contentLen) && m.find(idx)) {
 			String url = m.group(1);
 			int origUrlLength = url.length();
