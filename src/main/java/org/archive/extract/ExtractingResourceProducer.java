@@ -37,8 +37,18 @@ public class ExtractingResourceProducer implements ResourceProducer {
 						current.getClass().toString(),
 						f.getClass().toString()));
 			}
-			current = f.getResource(current.getInputStream(),
-					current.getMetaData(), current.getContainer());
+			
+			Resource previous = current;
+			try {
+				current = f.getResource(current.getInputStream(),
+						current.getMetaData(), current.getContainer());
+			} catch (ResourceParseException e) {
+				if(LOG.isLoggable(Level.WARNING)) {
+					LOG.warning("Error creating resource, returning more generic version: " + e);
+				}
+				// If we end up with some kind of parse error, return the resource one level higher
+				return previous;				
+			}
 		}
 	}
 
