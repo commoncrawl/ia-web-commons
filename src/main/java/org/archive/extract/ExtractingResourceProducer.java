@@ -37,7 +37,8 @@ public class ExtractingResourceProducer implements ResourceProducer {
 						current.getClass().toString(),
 						f.getClass().toString()));
 			}
-			
+
+			/*
 			Resource previous = current;
 			try {
 				current = f.getResource(current.getInputStream(),
@@ -49,6 +50,10 @@ public class ExtractingResourceProducer implements ResourceProducer {
 				// If we end up with some kind of parse error, return the resource one level higher
 				return previous;				
 			}
+			*/
+			current = f.getResource(current.getInputStream(),
+					current.getMetaData(), current.getContainer());
+			
 		}
 	}
 
