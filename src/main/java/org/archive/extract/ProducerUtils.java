@@ -65,7 +65,15 @@ public class ProducerUtils {
 
 	    } else {
 
-	    	if(!(file.exists() && file.canRead())) {
+			if(path.startsWith("file:/")) {
+				file = new File(new URL(path).getPath());
+			}
+
+			if(!file.exists()) {
+				System.err.println(path + ": file not found.");
+				return null;
+			}
+			if(!file.canRead()) {
 				System.err.println(path + " is not a readable file.");
 				return null;
 			}
