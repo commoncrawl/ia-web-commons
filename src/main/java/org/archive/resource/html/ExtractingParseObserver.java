@@ -25,13 +25,18 @@ public class ExtractingParseObserver implements ParseObserver {
 
 	protected static String cssUrlPatString = 
 		"url\\s*\\(\\s*((?:\\\\?[\"'])?.+?(?:\\\\?[\"'])?)\\s*\\)";
+	protected static String cssUrlTrimPatString =
+			"^(?:\\\\?[\"'])+|(?:\\\\?[\"'])+$";
 	protected static String cssImportNoUrlPatString = 
-		"@import\\s+((?:'[^']+')|(?:\"[^\"]+\")|(?:\\('[^']+'\\))|(?:\\(\"[^\"]+\"\\))|(?:\\([^)]+\\))|(?:[a-z0-9_.:/\\\\-]+))\\s*;";
+			"@import\\s+((?:'[^']+')|(?:\"[^\"]+\")|(?:\\('[^']+'\\))|(?:\\(\"[^\"]+\"\\))|(?:\\([^)]+\\))|(?:[a-z0-9_.:/\\\\-]+))\\s*;";
 
 	protected static Pattern cssImportNoUrlPattern = Pattern
 			.compile(cssImportNoUrlPatString);
 
 	protected static Pattern cssUrlPattern = Pattern.compile(cssUrlPatString);
+
+	protected static Pattern cssUrlTrimPattern = Pattern.compile(cssUrlTrimPatString);
+
 	private final static int MAX_TEXT_LEN = 100;
 
 //	private static String GLOBAL_ATTR[] = {"background"};
@@ -417,22 +422,10 @@ public class ExtractingParseObserver implements ParseObserver {
 		while((idx < contentLen) && m.find()) {
 			idx = m.end();
 			String url = m.group(1);
-			if(url.length() < 2) {
-				continue;
+			url = cssUrlTrimPattern.matcher(url).replaceAll("");
+			if (!url.isEmpty()) {
+				data.addHref("path","STYLE/#text","href", url);
 			}
-			if ((url.charAt(0) == '(') 
-					&& (url.charAt(url.length()-1) == ')')) {
-				url = url.substring(1, url.length() - 1);
-			}
-			if (url.charAt(0) == '"' || url.charAt(0) == '\'') {
-				url = url.substring(1, url.length() - 1);
-			} else if (url.charAt(0) == '\\') {
-				if(url.length() <= 4) {
-					continue;
-				}
-				url = url.substring(2, url.length() - 2);
-			}
-			data.addHref("path","STYLE/#text","href",url);
 		}
 	}
 }
