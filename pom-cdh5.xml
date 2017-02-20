@@ -51,12 +51,12 @@
       <groupId>commons-httpclient</groupId>
       <artifactId>commons-httpclient</artifactId>
       <version>3.1</version>
-    </dependency>    
+    </dependency>
 
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-client</artifactId>
-      <version>2.6.0-cdh5.8.0</version>
+      <version>2.6.0-cdh5.10.0</version>
       <exclusions>
         <exclusion>
           <groupId>commons-httpclient</groupId>
@@ -85,8 +85,8 @@
         <exclusion>
           <groupId>tomcat</groupId>
           <artifactId>jasper-compiler</artifactId>
-        </exclusion>                
-      </exclusions> 
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
@@ -128,7 +128,7 @@
       <artifactId>libidn</artifactId>
       <version>1.15</version>
     </dependency>
-    <dependency>                        
+    <dependency>
       <groupId>it.unimi.dsi</groupId>
       <artifactId>mg4j</artifactId>
       <version>1.0.1</version>
