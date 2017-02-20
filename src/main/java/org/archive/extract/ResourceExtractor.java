@@ -53,8 +53,7 @@ public class ResourceExtractor implements ResourceConstants, Tool {
 		System.err.println("\t\t\t (note that column 1 is NOT standard Wayback canonicalized)\n");
 		System.err.println("\t\t-wat\tembed JSON output in a compressed WARC" +
 				"wrapper, for storage, or sharing.");
-    System.err.println("\t\t-wet\tembed text extracts in a compressed WARC" +
-        "wrapper, for storage, or sharing.");
+		System.err.println("\t\t-wet\tembed text extracts in a compressed WARC" + "wrapper, for storage, or sharing.");
 		return exitCode;
 	}
 
@@ -103,13 +102,13 @@ public class ResourceExtractor implements ResourceConstants, Tool {
 	    	} else if(args[arg].equals("-wat")) {
 	    		path = args[arg+1];
 	    		out = new WATExtractorOutput(os);
-        } else if(args[arg].equals("-wet")) {
-          path = args[arg+1];
-          out = new WETExtractorOutput(os);
-	    	} else {
-	    		String filter = args[arg+1];
-	    		out = new JSONViewExtractorOutput(os, filter);
-	    	}
+			} else if (args[arg].equals("-wet")) {
+				path = args[arg + 1];
+				out = new WETExtractorOutput(os);
+			} else {
+				String filter = args[arg + 1];
+				out = new JSONViewExtractorOutput(os, filter);
+			}
 	    } else {
 	    	out = new DumpingExtractorOutput(os);
 	    }

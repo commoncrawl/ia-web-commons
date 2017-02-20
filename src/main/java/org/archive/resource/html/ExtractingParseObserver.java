@@ -18,10 +18,10 @@ public class ExtractingParseObserver implements ParseObserver {
 	HTMLMetaData data;
 	Stack<ArrayList<String>> openAnchors;
 	Stack<StringBuilder> openAnchorTexts;
-  StringBuffer textExtract;
+	StringBuffer textExtract;
 	String title = null;
 	boolean inTitle = false;
-  boolean inPre = false;
+	boolean inPre = false;
 
 	protected static String cssUrlPatString = 
 		"url\\s*\\(\\s*((?:\\\\?[\"'])?.+?(?:\\\\?[\"'])?)\\s*\\)";
@@ -67,7 +67,7 @@ public class ExtractingParseObserver implements ParseObserver {
 		this.data = data;
 		openAnchors = new Stack<ArrayList<String>>();
 		openAnchorTexts = new Stack<StringBuilder>();
-    textExtract = new StringBuffer(8192);
+		textExtract = new StringBuffer(8192);
 	}
 	
 	public void handleDocumentStart() {
@@ -75,10 +75,10 @@ public class ExtractingParseObserver implements ParseObserver {
 	}
 
 	public void handleDocumentComplete() {
-    if (textExtract.length() > 0) {
-      data.setTextExtract(textExtract.toString());
-      textExtract = new StringBuffer(8192);
-    }
+		if (textExtract.length() > 0) {
+			data.setTextExtract(textExtract.toString());
+			textExtract = new StringBuffer(8192);
+		}
 	}
 
 	public void handleTagEmpty(TagNode tag) {
@@ -91,8 +91,8 @@ public class ExtractingParseObserver implements ParseObserver {
 			inTitle = !tag.isEmptyXmlTag();
 			return;
 		} else if (name.equals("PRE")) {
-      inPre = true;
-    }
+			inPre = true;
+		}
 
 		// first the global attributes:
 		//      background
@@ -139,59 +139,59 @@ public class ExtractingParseObserver implements ParseObserver {
 				}
 			}
 		} else if (tag.getTagName().equals("PRE")) {
-      inPre = false;
-    }
+			inPre = false;
+		}
 	}
 
 	public void handleTextNode(TextNode text) {
 		// TODO: OPTIMIZ: This can be a lot smarter, if StringBuilders are full,
-		//                this result is thrown away.
-		//System.out.println("JDBUG: Got text from node: " + text.getText().toString());
+		// this result is thrown away.
+		// System.out.println("JDBUG: Got text from node: " +
+		// text.getText().toString());
 
-    String txt = text.getText();
-    if (!inPre) {
-      txt = Translate.decode(txt);
-      txt = txt.replace('\u00a0', ' ');
+		String txt = text.getText();
+		if (!inPre) {
+			txt = Translate.decode(txt);
+			txt = txt.replace('\u00a0', ' ');
 
-      char c = ' ';
-      if (textExtract.length() > 0) {
-        c = textExtract.charAt(textExtract.length()-1);
-      }
-      for (int i = 0; i < txt.length(); i++) {
-        char c2 = txt.charAt(i);
-        // Translate so output is a bit cleaner
-        if (c2 == '\r') {
-          c2 = '\n';
-        }
-        if (!Character.isWhitespace(c) || !Character.isWhitespace(c2)) {
-          textExtract.append(c2);
-        }
-        c = c2;
-      }
-    }
-    else
-      textExtract.append(txt);
+			char c = ' ';
+			if (textExtract.length() > 0) {
+				c = textExtract.charAt(textExtract.length() - 1);
+			}
+			for (int i = 0; i < txt.length(); i++) {
+				char c2 = txt.charAt(i);
+				// Translate so output is a bit cleaner
+				if (c2 == '\r') {
+					c2 = '\n';
+				}
+				if (!Character.isWhitespace(c) || !Character.isWhitespace(c2)) {
+					textExtract.append(c2);
+				}
+				c = c2;
+			}
+		} else
+			textExtract.append(txt);
 
-    String t = text.getText().replaceAll("\\s+", " ");
+		String t = text.getText().replaceAll("\\s+", " ");
 
-		if(t.length() > MAX_TEXT_LEN) {
-			t = t.substring(0,MAX_TEXT_LEN);
+		if (t.length() > MAX_TEXT_LEN) {
+			t = t.substring(0, MAX_TEXT_LEN);
 		}
-		if(inTitle) {
+		if (inTitle) {
 			title = t;
 
 		} else {
-			
-			for(StringBuilder s : openAnchorTexts) {
-				if(s.length() >= MAX_TEXT_LEN) {
+
+			for (StringBuilder s : openAnchorTexts) {
+				if (s.length() >= MAX_TEXT_LEN) {
 					// if we are full, parents enclosing us should be too..
 					break;
 				}
-				if(s.length() + t.length() < MAX_TEXT_LEN) {
+				if (s.length() + t.length() < MAX_TEXT_LEN) {
 					s.append(t);
 				} else {
 					// only add as much as we can:
-					s.append(t.substring(0,MAX_TEXT_LEN - s.length()));
+					s.append(t.substring(0, MAX_TEXT_LEN - s.length()));
 				}
 				// BUGBUG: check now for multiple trailing spaces, and strip:
 			}
