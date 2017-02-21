@@ -1,0 +1,136 @@
+WARC/1.0
+WARC-Type: warcinfo
+Content-Type: application/warc-fields
+WARC-Date: 2017-02-20T14:00:56Z
+Content-Length: 128
+
+format: WARC File Format 1.0
+conformsTo: http://bibnum.bnf.fr/WARC/WARC_ISO_28500_version1_latestdraft.pdf
+robots: classic
+
+
+
+WARC/1.0
+WARC-Type: response
+WARC-Date: 2017-02-20T14:00:56Z
+WARC-Target-URI: http://www.example.com/html4.html
+Content-Type: application/http;msgtype=response
+Content-Length: 1243
+
+HTTP/1.1 200 OK
+Date: Mon, 20 Feb 2017 14:00:56 GMT
+Content-Length: 1125
+Content-Type: application/xhtml+xml
+
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Refresh" content="5; URL=http://www.example.com/redirected.html" />
+<base href="http://www.example.com/" />
+<title>Test XHTML Link Extraction</title>
+</head>
+<body background="background.jpg">
+<a href="http://www.example.com/a-href.html">A@/href</a>
+<p>
+  <a href="#anchor">anchor only</a>
+  <img src="image.png" alt="IMG@/src"/>
+  <img src="image.gif" alt="IMG@/longdesc" width="100" height="132" longdesc="http://example.com/image-description.html#image.gif">
+  <object width="400" height="400" data="helloworld.swf"><!-- https://www.w3schools.com/TAgs/tag_object.asp --></object>
+</p>
+<p>
+  <q cite="http://www.example.com/shakespeare.html">To be or not to be.</q>
+</p>
+<blockquote cite="http://www.example.com/shakespeare-long.html">
+To be, or not to be, that is the question:<br/>
+Whether 'tis nobler in the mind to suffer<br/>
+The slings and arrows of outrageous fortune, …
+</blockquote>
+</body>
+</html>
+
+
+WARC/1.0
+WARC-Type: response
+WARC-Target-URI: http://www.example.com/link-extraction-test-html5-video.html
+WARC-Date: 2017-02-20T21:35:03Z
+Content-Type: application/http;msgtype=response
+Content-Length: 890
+
+HTTP/1.1 200 OK
+Date: Mon, 20 Feb 2017 21:35:03 GMT
+Content-Length: 789
+Content-Type: text/html
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Test HTML5 Video Tag</title>
+<meta charset="utf-8">
+<link rel="canonical" href="http:///www.example.com/video.html">
+<link rel="alternate" type="application/rss+xml" title="Videos" href="video.rss">
+</head>
+<body>
+<!-- https://developer.mozilla.org/en/docs/Web/HTML/Element/video -->
+<video width="480" controls
+  poster="https://archive.org/download/WebmVp8Vorbis/webmvp8.gif" >
+  <source
+    src="https://archive.org/download/WebmVp8Vorbis/webmvp8.webm"
+    type="video/webm">
+  <source
+    src="https://archive.org/download/WebmVp8Vorbis/webmvp8_512kb.mp4"
+    type="video/mp4">
+  <source
+    src="https://archive.org/download/WebmVp8Vorbis/webmvp8.ogv"
+    type="video/ogg">
+  Your browser doesn't support HTML5 video tag.
+</video>
+</body>
+</html>
+
+
+WARC/1.0
+WARC-Type: response
+WARC-Target-URI: http://www.example.com/fb-video.html
+WARC-Date: 2017-02-20T16:58:50Z
+Content-Type: application/http;msgtype=response
+Content-Length: 1330
+
+HTTP/1.1 200 OK
+Date: Mon, 20 Feb 2017 16:58:50 GMT
+Content-Length: 1194
+Content-Type: text/html
+
+<!-- https://developers.facebook.com/docs/plugins/embedded-video-player -->
+<html>
+<head>
+  <title>fb-video - Embedded Videos - Social Plugins</title> 
+</head>
+<body>
+
+  <!-- Load Facebook SDK for JavaScript -->
+  <div id="fb-root"></div>
+  <script>(function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.6";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));</script>
+
+  <!-- Your embedded video player code -->
+  <div class="fb-video" data-href="https://www.facebook.com/facebook/videos/10153231379946729/" data-width="500" data-show-text="false">
+    <div class="fb-xfbml-parse-ignore">
+      <blockquote cite="https://www.facebook.com/facebook/videos/10153231379946729/">
+        <a href="https://www.facebook.com/facebook/videos/10153231379946729/">How to Share With Just Friends</a>
+        <p>How to share with just friends.</p>
+        Posted by <a href="https://www.facebook.com/facebook/">Facebook</a> on Friday, December 5, 2014
+      </blockquote>
+    </div>
+  </div>
+
+</body>
+</html>
+
+

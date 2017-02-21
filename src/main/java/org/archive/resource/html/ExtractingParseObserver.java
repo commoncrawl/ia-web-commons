@@ -60,6 +60,17 @@ public class ExtractingParseObserver implements ParseObserver {
 		extractors.put("META", new MetaTagExtractor());
 		extractors.put("OBJECT", new ObjectTagExtractor());
 		extractors.put("SCRIPT", new ScriptTagExtractor());
+		extractors.put("Q", new QuotationLinkTagExtractor());
+		extractors.put("BLOCKQUOTE", new QuotationLinkTagExtractor());
+		extractors.put("DEL", new QuotationLinkTagExtractor());
+		extractors.put("INS", new QuotationLinkTagExtractor());
+		// HTML5:
+		extractors.put("BUTTON", new ButtonTagExtractor());
+		extractors.put("MENUITEM", new MenuitemTagExtractor());
+		extractors.put("VIDEO", new EmbedVideoTagExtractor());
+		extractors.put("AUDIO", new EmbedTagExtractor());
+		extractors.put("TRACK", new EmbedTagExtractor());
+		extractors.put("SOURCE", new EmbedTagExtractor());
 	}
 
 	
@@ -335,12 +346,24 @@ public class ExtractingParseObserver implements ParseObserver {
 		}
 	}
 	
+	private static class ButtonTagExtractor implements TagExtractor {
+		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
+			addBasicHrefs(data,node,"formaction");
+		}
+	}
+
 	private static class EmbedTagExtractor implements TagExtractor {
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			addBasicHrefs(data,node,"src");
 		}
 	}
 	
+	private static class EmbedVideoTagExtractor implements TagExtractor {
+		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
+			addBasicHrefs(data,node,"src","poster");
+		}
+	}
+
 	private static class FormTagExtractor implements TagExtractor {
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			ArrayList<String> l = new ArrayList<String>();
@@ -368,21 +391,26 @@ public class ExtractingParseObserver implements ParseObserver {
 			addBasicHrefs(data,node,"src");
 		}
 	}
+
 	private static class IFrameTagExtractor implements TagExtractor {
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			addBasicHrefs(data,node,"src");
 		}
 	}
+
 	private static class ImgTagExtractor implements TagExtractor {
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			addHrefWithAttrs(data,node,"src","alt","title");
+			addBasicHrefs(data,node,"longdesc");
 		}
 	}
+
 	private static class InputTagExtractor implements TagExtractor {
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
-			addBasicHrefs(data,node,"src");
+			addBasicHrefs(data,node,"src","formaction");
 		}
 	}
+
 	private static class LinkTagExtractor implements TagExtractor {
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			ArrayList<String> l = getAttrListUrl(node,"href","rel","type");
@@ -391,6 +419,13 @@ public class ExtractingParseObserver implements ParseObserver {
 			}
 		}
 	}
+
+	private static class MenuitemTagExtractor implements TagExtractor {
+		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
+			addBasicHrefs(data,node,"icon");
+		}
+	}
+
 	private static class MetaTagExtractor implements TagExtractor {
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			ArrayList<String> l = getAttrList(node,"name","rel","content","http-equiv","property");
@@ -399,11 +434,19 @@ public class ExtractingParseObserver implements ParseObserver {
 			}
 		}
 	}
+
 	private static class ObjectTagExtractor implements TagExtractor {
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
-			addBasicHrefs(data,node,"codebase","cdata");
+			addBasicHrefs(data,node,"codebase","cdata","data");
 		}
 	}
+
+	private static class QuotationLinkTagExtractor implements TagExtractor {
+		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
+			addBasicHrefs(data,node,"cite");
+		}
+	}
+
 	private static class ScriptTagExtractor implements TagExtractor {
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			ArrayList<String> l = getAttrListUrl(node,"src","type");
@@ -412,6 +455,7 @@ public class ExtractingParseObserver implements ParseObserver {
 			}
 		}
 	}
+
 	private void patternCSSExtract(HTMLMetaData data, Pattern pattern, String content) {
 		Matcher m = pattern.matcher(content);
 		int idx = 0;
