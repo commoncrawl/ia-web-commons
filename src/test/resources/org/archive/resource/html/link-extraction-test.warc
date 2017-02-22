@@ -92,6 +92,42 @@ Content-Type: text/html
 
 WARC/1.0
 WARC-Type: response
+WARC-Target-URI: http://www.example.com/poor_html5.html
+WARC-Date: 2017-02-21T15:50:40Z
+Content-Type: application/http;msgtype=response
+Content-Length: 594
+
+HTTP/1.1 200 OK
+Date: Tue, 21 Feb 2017 15:50:40 GMT
+Content-Length: 486
+Content-Type: text/html
+
+<!DOCTYPE html>
+<TitLe>Testing poor HTML5</TitLe>
+<METa CharSet="utf-8">
+<Meta name="descripTion" conTent="A bad but valid HTML5 document" />
+<META nAme="KEYWORDS" lang="de" Content="Test HTML5" />
+
+
+This is valid HTML5!
+
+<Nav>
+  <ul>
+    <lI>list item 1, hello i'm item one!
+    <li>list item 2, hello i'm item two!!
+    <lI>list item 3, hello i'm item three!
+  </UL>
+</naV>
+
+<header>header</HEADER>
+
+<h1>headline</h1>
+
+<P>paragraph one with <A hRef = http://www.example.com/ >link</a>.
+
+
+WARC/1.0
+WARC-Type: response
 WARC-Target-URI: http://www.example.com/fb-video.html
 WARC-Date: 2017-02-20T16:58:50Z
 Content-Type: application/http;msgtype=response
@@ -132,5 +168,153 @@ Content-Type: text/html
 
 </body>
 </html>
+
+
+WARC/1.0
+WARC-Type: response
+WARC-Target-URI: http://www.example.com/data-href.examples.html
+WARC-Date: 2017-02-21T21:05:10Z
+Content-Type: application/http;msgtype=response
+Content-Length: 3160
+
+HTTP/1.1 200 OK
+Date: Tue, 21 Feb 2017 21:05:10 GMT
+Content-Length: 3057
+Content-Type: text/html
+
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!-- CSS example -->
+    <link rel="stylesheet" class="mediaquerydependent"
+        href="standard.css"
+        data-media="screen and (min-width: 600px)" data-href="green.css">
+    <link rel="stylesheet" class="mediaquerydependent"
+        data-media="screen and (min-width: 4000px)" data-href="blue.css">
+        <title></title>
+</head>
+
+
+<!-- FB embedded video player concise WP example -->
+<div class="fb-video" data-href="https://www.facebook.com/elegantthemes/videos/10153760379211923/"
+data-allowfullscreen="true" data-width="550"></div>
+
+<!-- FB embedded video player example -->
+<div class="fb-video" data-href="https://www.facebook.com/facebook/videos/10153231379946729/" data-width="500" data-show-text="false">
+    <div class="fb-xfbml-parse-ignore">
+        <blockquote cite="https://www.facebook.com/facebook/videos/10153231379946729/">
+            <a href="https://www.facebook.com/facebook/videos/10153231379946729/">How to Share With Just Friends</a>
+            <p>How to share with just friends.</p>
+            Posted by <a href="https://www.facebook.com/facebook/">Facebook</a> on Friday, December 5, 2014
+        </blockquote>
+    </div>
+</div>
+
+<!-- flowplayer example -->
+<div class="flowplayer" data-ratio="0.4167" data-debug="true">
+    <video>
+        <source type="video/webm" src="//edge.flowplayer.org/bauhaus.webm">
+        <source type="video/mp4" src="//edge.flowplayer.org/bauhaus.mp4">
+    </video>
+</div>
+<p>
+    <button id="good" data-href="//edge.flowplayer.org/functional.webm">
+    Load good URL
+    </button>
+</p>
+
+<!-- data-href jQ script example -->
+<article data-href="/content-page">
+    <h1><a href="/content-page">Headline goes here.</a></h1>
+    <p>And here goes a bit of copy about the content of the article.</p>
+    <small>Tags: <a href="/tags/content">content</a>, <a href="/tags/headlines">headlines</a></small>
+</article>
+
+<!-- FB like example -->
+<div class="fb-like" data-href="http://grabaperch.com" data-send="true" data-width="450" data-show-faces="true"></div>
+
+<!-- jackbox example -->
+<a class="jackbox"
+    data-thumbnail="jackbox/img/thumbs/num2.jpg"
+    data-group="html"
+    data-title="iFrame"
+    data-width="1100"
+    data-description="#description_1"
+    data-href="http://codecanyon.net/user/CodingJack"
+    ><!-- end opening tag -->
+    <img src="jackbox/img/thumbs/4.jpg" width="180" height="150" alt="responsive lightbox" />
+</a>
+
+<!-- venobox example: data-href takes precedence over href -->
+<a class="venobox" href="#" data-href="//venobox-destination">venobox</a>
+
+<!-- bootstrap 3 modal -->
+<div id="popup" class="modal hide fade" data-href="http://www.youtube.com/v/itTskyFLSS8&amp;rel=0&amp;autohide=1&amp;showinfo=0&amp;autoplay=1">
+    <div class="container">
+        <a href="#" class="close icon" data-dismiss="modal">X</a>
+        <iframe src="http://www.youtube.com/v/itTskyFLSS8&amp;rel=0&amp;autohide=1&amp;showinfo=0" width="500" height="281" frameborder="0" allowfullscreen=""></iframe>
+    </div>
+</div> <!-- #popup -->
+
+
+WARC/1.0
+WARC-Type: response
+WARC-Target-URI: http://www.example.com/fb-social-plugins.html
+WARC-Date: 2017-02-22T09:33:02Z
+Content-Type: application/http;msgtype=response
+Content-Length: 1870
+
+HTTP/1.1 200 OK
+Date: Wed, 22 Feb 2017 09:33:02 GMT
+Content-Length: 1767
+Content-Type: text/html
+
+<!-- https://developers.facebook.com/docs/plugins/save -->
+<div class="fb-save" 
+     data-uri="http://www.your-domain.com/your-page.html">
+</div>
+
+<!-- https://developers.facebook.com/docs/plugins/comments -->
+<div class="fb-comments"
+     data-href="https://developers.facebook.com/docs/plugins/comments#configurator"
+     data-numposts="5"></div>
+
+<!-- https://developers.facebook.com/docs/plugins/embedded-comments -->
+<div class="fb-comment-embed"
+   data-href="https://www.facebook.com/zuck/posts/10102735452532991?comment_id=1070233703036185"
+   data-width="500"></div>
+
+<!-- https://developers.facebook.com/docs/plugins/follow-button -->
+<div class="fb-follow"
+     data-href="https://www.facebook.com/zuck"
+     data-layout="standard" data-size="small"
+     data-show-faces="true"></div>
+
+<!-- https://developers.facebook.com/docs/plugins/like-button -->
+<div class="fb-like"
+     data-href="https://developers.facebook.com/docs/plugins/"
+     data-layout="standard"
+     data-action="like"
+     data-size="small"
+     data-show-faces="true"
+     data-share="true"></div>
+
+<!-- https://developers.facebook.com/docs/plugins/page-plugin -->
+<div class="fb-page"
+     data-href="https://www.facebook.com/facebook"
+     data-tabs="timeline"
+     data-small-header="false"
+     data-adapt-container-width="true"
+     data-hide-cover="false"
+     data-show-facepile="true">
+  <blockquote cite="https://www.facebook.com/facebook"
+              class="fb-xfbml-parse-ignore"
+              ><a href="https://www.facebook.com/facebook">Facebook</a></blockquote></div>
+
+<!-- https://developers.facebook.com/docs/plugins/share-button -->
+  <div class="fb-share-button" 
+    data-href="http://www.your-domain.com/your-page.html" 
+    data-layout="button_count">
+  </div>
 
 

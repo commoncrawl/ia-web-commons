@@ -132,26 +132,28 @@ public class ExtractingParseObserverTest extends TestCase {
 		MetaData md = resource.getMetaData();
 		LOG.info(md.toString());
 		Multimap<String, String> links = ArrayListMultimap.create();
-		try {
+		JSONObject head = md.optJSONObject("Head");
+		if (head != null) {
 			// <base href="http://www.example.com/" />
-			String baseUrl = (String) md.getJSONObject("Head").opt("Base");
+			String baseUrl = (String) head.opt("Base");
 			if (baseUrl != null) {
 				links.put(baseUrl, "__base__");
 			}
 			// <meta http-equiv="Refresh" content="5; URL=http://www.example.com/redirected.html" />
-			JSONArray metas = md.getJSONObject("Head").optJSONArray("Metas");
+			JSONArray metas = head.optJSONArray("Metas");
 			if (metas != null) {
 				for (int i = 0; i < metas.length(); i++) {
 					JSONObject o = (JSONObject) metas.optJSONObject(i);
-					if (o.getString("http-equiv").equals("Refresh")) {
-						String metaRefreshTarget = o.getString("content").replaceFirst("(?i)(?:^\\d+\\s*;)?\\s*url=", "");
-						LOG.info(metaRefreshTarget);
-						links.put(metaRefreshTarget, "__meta_refresh__");
+					String httpEquiv = o.optString("http-equiv");
+					if (httpEquiv != null && httpEquiv.equalsIgnoreCase("Refresh")) {
+						String metaRefreshTarget = o.optString("content");
+						if (metaRefreshTarget != null) {
+							metaRefreshTarget = metaRefreshTarget.replaceFirst("(?i)(?:^\\d+\\s*;)?\\s*url=", "");
+							links.put(metaRefreshTarget, "__meta_refresh__");
+						}
 					}
 				}
 			}
-		} catch (JSONException e) {
-			fail("Failed to parse JSON: " + e.getMessage());
 		}
 		// extract outlinks
 		List<JSONArray> linkArrays = new ArrayList<JSONArray>();
@@ -212,12 +214,55 @@ public class ExtractingParseObserverTest extends TestCase {
 				{"https://archive.org/download/WebmVp8Vorbis/webmvp8.ogv", "SOURCE@/src"}
 		};
 		checkLinks(extractor.getNext(), html5links);
+		String[][] html5links2 = {
+				{"http://www.example.com/", "A@/href"},
+		};
+		checkLinks(extractor.getNext(), html5links2);
 		String[][] fbVideoLinks = {
 				{"https://www.facebook.com/facebook/videos/10153231379946729/", "BLOCKQUOTE@/cite"},
 				{"https://www.facebook.com/facebook/videos/10153231379946729/", "A@/href"},
 				{"https://www.facebook.com/facebook/", "A@/href"},
+				{"https://www.facebook.com/facebook/videos/10153231379946729/", "DIV@/data-href"}
 		};
 		checkLinks(extractor.getNext(), fbVideoLinks);
+		String[][] dataHrefLinks = {
+				{"standard.css", "LINK@/href", "stylesheet"},
+				{"https://www.facebook.com/elegantthemes/videos/10153760379211923/", "DIV@/data-href"},
+				{"https://www.facebook.com/facebook/videos/10153231379946729/", "DIV@/data-href"},
+				{"https://www.facebook.com/facebook/videos/10153231379946729/", "BLOCKQUOTE@/cite"},
+				{"https://www.facebook.com/facebook/videos/10153231379946729/", "A@/href"},
+				{"https://www.facebook.com/facebook/", "A@/href"},
+				{"//edge.flowplayer.org/bauhaus.webm", "SOURCE@/src"},
+				{"//edge.flowplayer.org/bauhaus.mp4", "SOURCE@/src"},
+				{"//edge.flowplayer.org/functional.webm", "BUTTON@/data-href"},
+				{"/content-page", "ARTICLE@/data-href"},
+				{"/content-page",  "A@/href"},
+				{"/tags/content","A@/href"},
+				{"/tags/headlines", "A@/href"},
+				{"http://grabaperch.com", "DIV@/data-href"},
+				{"green.css", "LINK@/data-href"},
+				{"blue.css", "LINK@/data-href"},
+				{"http://codecanyon.net/user/CodingJack", "A@/data-href"},
+				{"jackbox/img/thumbs/4.jpg",  "IMG@/src"},
+				{"//venobox-destination", "A@/data-href"},
+				{"#", "A@/href"},
+				{"http://www.youtube.com/v/itTskyFLSS8&amp;rel=0&amp;autohide=1&amp;showinfo=0&amp;autoplay=1", "DIV@/data-href"},
+				{"#", "A@/href"},
+				{"http://www.youtube.com/v/itTskyFLSS8&amp;rel=0&amp;autohide=1&amp;showinfo=0", "IFRAME@/src"}
+		};
+		checkLinks(extractor.getNext(), dataHrefLinks);
+		String[][] fbSocialLinks = {
+				{"http://www.your-domain.com/your-page.html", "DIV@/data-uri"},
+				{"https://developers.facebook.com/docs/plugins/comments#configurator", "DIV@/data-href"},
+				{"https://www.facebook.com/zuck/posts/10102735452532991?comment_id=1070233703036185", "DIV@/data-href"},
+				{"https://www.facebook.com/zuck", "DIV@/data-href"},
+				{"https://developers.facebook.com/docs/plugins/", "DIV@/data-href"},
+				{"https://www.facebook.com/facebook", "DIV@/data-href"},
+				{"https://www.facebook.com/facebook", "BLOCKQUOTE@/cite"},
+				{"https://www.facebook.com/facebook", "A@/href"},
+				{"http://www.your-domain.com/your-page.html", "DIV@/data-href"}
+		};
+		checkLinks(extractor.getNext(), fbSocialLinks);
 	}
 
 }

@@ -2,12 +2,17 @@ package org.archive.resource.html;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
+import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.archive.format.text.html.ParseObserver;
+import org.htmlparser.Attribute;
 import org.htmlparser.nodes.RemarkNode;
 import org.htmlparser.nodes.TagNode;
 import org.htmlparser.nodes.TextNode;
@@ -39,11 +44,10 @@ public class ExtractingParseObserver implements ParseObserver {
 
 	private final static int MAX_TEXT_LEN = 100;
 
-//	private static String GLOBAL_ATTR[] = {"background"};
-	
 	private static final String PATH = "path";
 	private static final String PATH_SEPARATOR = "@/";
-	private final static Map<String, TagExtractor> extractors;
+	private static final Map<String, TagExtractor> extractors;
+	private static final Set<String> globalHrefAttributes;
 	static {
 		extractors = new HashMap<String,ExtractingParseObserver.TagExtractor>();
 		extractors.put("A", new AnchorTagExtractor());
@@ -71,6 +75,11 @@ public class ExtractingParseObserver implements ParseObserver {
 		extractors.put("AUDIO", new EmbedTagExtractor());
 		extractors.put("TRACK", new EmbedTagExtractor());
 		extractors.put("SOURCE", new EmbedTagExtractor());
+
+		globalHrefAttributes = new HashSet<String>();
+		globalHrefAttributes.add("background");
+		globalHrefAttributes.add("data-href");
+		globalHrefAttributes.add("data-uri");
 	}
 
 	
@@ -106,10 +115,17 @@ public class ExtractingParseObserver implements ParseObserver {
 		}
 
 		// first the global attributes:
-		//      background
-		String v = tag.getAttribute("background");
-		if(v != null) {
-			data.addHref(PATH,makePath(name,"background"),"url",v);
+		Vector<Attribute> attributes = tag.getAttributesEx();
+		for (Attribute a : attributes) {
+			String attrName = a.getName();
+			String attrValue = a.getValue();
+			if (attrName == null || attrValue == null) {
+				continue;
+			}
+			attrName = attrName.toLowerCase(Locale.ROOT);
+			if (globalHrefAttributes.contains(attrName)) {
+				data.addHref(PATH,makePath(name,attrName),"url",attrValue);
+			}
 		}
 		// TODO: style attribute, BASE(href) tag, Resolve URLs
 		
