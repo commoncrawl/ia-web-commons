@@ -14,7 +14,7 @@ WARC/1.0
 WARC-Type: response
 WARC-Date: 2017-02-20T14:00:56Z
 WARC-Target-URI: http://www.example.com/html4.html
-Content-Type: application/http;msgtype=response
+Content-Type: application/http; msgtype=response
 Content-Length: 1243
 
 HTTP/1.1 200 OK
@@ -55,7 +55,7 @@ WARC/1.0
 WARC-Type: response
 WARC-Target-URI: http://www.example.com/link-extraction-test-html5-video.html
 WARC-Date: 2017-02-20T21:35:03Z
-Content-Type: application/http;msgtype=response
+Content-Type: application/http; msgtype=response
 Content-Length: 890
 
 HTTP/1.1 200 OK
@@ -94,7 +94,7 @@ WARC/1.0
 WARC-Type: response
 WARC-Target-URI: http://www.example.com/poor_html5.html
 WARC-Date: 2017-02-21T15:50:40Z
-Content-Type: application/http;msgtype=response
+Content-Type: application/http; msgtype=response
 Content-Length: 594
 
 HTTP/1.1 200 OK
@@ -130,7 +130,7 @@ WARC/1.0
 WARC-Type: response
 WARC-Target-URI: http://www.example.com/fb-video.html
 WARC-Date: 2017-02-20T16:58:50Z
-Content-Type: application/http;msgtype=response
+Content-Type: application/http; msgtype=response
 Content-Length: 1330
 
 HTTP/1.1 200 OK
@@ -174,7 +174,7 @@ WARC/1.0
 WARC-Type: response
 WARC-Target-URI: http://www.example.com/data-href.examples.html
 WARC-Date: 2017-02-21T21:05:10Z
-Content-Type: application/http;msgtype=response
+Content-Type: application/http; msgtype=response
 Content-Length: 3160
 
 HTTP/1.1 200 OK
@@ -261,7 +261,7 @@ WARC/1.0
 WARC-Type: response
 WARC-Target-URI: http://www.example.com/fb-social-plugins.html
 WARC-Date: 2017-02-22T09:33:02Z
-Content-Type: application/http;msgtype=response
+Content-Type: application/http; msgtype=response
 Content-Length: 1870
 
 HTTP/1.1 200 OK

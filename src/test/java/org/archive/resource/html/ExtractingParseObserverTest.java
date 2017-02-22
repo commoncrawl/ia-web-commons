@@ -39,7 +39,7 @@ public class ExtractingParseObserverTest extends TestCase {
 				"url(')",
 				"url('\"')",
 				"url('\\\"\"')",
-                "url(''''')"
+				"url(''''')"
 		};
 		boolean except = false;
 		HTMLMetaData md = new HTMLMetaData(new MetaData());
@@ -128,7 +128,7 @@ public class ExtractingParseObserverTest extends TestCase {
 
 	private void checkLinks(Resource resource, String[][] expectedLinks) {
 		assertNotNull(resource);
-		assertTrue(resource instanceof HTMLResource);
+		assertTrue("Wrong instance type of Resource: " + resource.getClass(), resource instanceof HTMLResource);
 		MetaData md = resource.getMetaData();
 		LOG.info(md.toString());
 		Multimap<String, String> links = ArrayListMultimap.create();
@@ -186,7 +186,7 @@ public class ExtractingParseObserverTest extends TestCase {
 
 	public void testLinkExtraction() throws ResourceParseException, IOException {
 		String testFileName = "link-extraction-test.warc";
-		ResourceProducer producer = ProducerUtils.getProducer(getClass().getResource(testFileName).toString());
+		ResourceProducer producer = ProducerUtils.getProducer(getClass().getResource(testFileName).getPath());
 		ResourceFactoryMapper mapper = new ExtractingResourceFactoryMapper();
 		ExtractingResourceProducer extractor = 
 				new ExtractingResourceProducer(producer, mapper);
