@@ -41,6 +41,10 @@ public class WATExtractorOutput implements ExtractorOutput {
 	
 	private static final Logger LOG = Logger.getLogger(WATExtractorOutput.class.getName());
 	
+	public WATExtractorOutput(OutputStream out) {
+		this(out, null);
+	}
+
 	public WATExtractorOutput(OutputStream out, String outputFile) {
 		gzW = new GZIPMemberWriter(out);
 		recW = new WARCRecordWriter();
@@ -67,6 +71,10 @@ public class WATExtractorOutput implements ExtractorOutput {
 			// hrm...
 			throw new IOException("Missing Envelope.Format");
 		}
+
+		// remove the text extracts if it exists
+		JSONUtils.removeObject(top, "Envelope.Payload-Metadata.HTTP-Response-Metadata.HTML-Metadata", "Text");
+
 		cos = getOutput();
 		if(envelopeFormat.startsWith("ARC")) {
 			writeARC(cos,top);
@@ -100,8 +108,8 @@ public class WATExtractorOutput implements ExtractorOutput {
 		File tmpFile = new File(filename);
 		filename = tmpFile.getName();
 		HttpHeaders headers = new HttpHeaders();
-		headers.add("software", IAUtils.COMMONS_VERSION);
-		headers.addDateHeader("extractedDate", new Date());
+		headers.add("Software-Info", IAUtils.COMMONS_VERSION);
+		headers.addDateHeader("Extracted-Date", new Date());
 
 		// add ip, hostname
 		try {

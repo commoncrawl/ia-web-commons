@@ -114,4 +114,14 @@ public class JSONUtils {
 			}
 		}
 	}
+  public static boolean removeObject(JSONObject json, String path, String node) {
+    JSONObject obj = extractObject(json, "Envelope.Payload-Metadata.HTTP-Response-Metadata.HTML-Metadata");
+    if (obj != null) {
+      if (obj.remove("Text") != null) {
+        return true;
+      }
+    }
+
+    return false;
+  }
 }

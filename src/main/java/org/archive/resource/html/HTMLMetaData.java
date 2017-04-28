@@ -69,6 +69,10 @@ public class HTMLMetaData extends MetaData implements ResourceConstants {
 		appendObj2(this,HTML_LINKS,a);
 	}
 
+	public void setTextExtract(String textExtract) {
+		putUnlessNull(this,HTML_TEXT, textExtract);
+	}
+
 	private void appendObj2(JSONObject o, String arr, String... a) {
 		if(o == null) {
 			return;

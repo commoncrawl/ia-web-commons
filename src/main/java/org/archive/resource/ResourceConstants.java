@@ -115,5 +115,5 @@ public interface ResourceConstants {
 	public static final String HTML_LINK_TAGS   = "Link";
 	public static final String HTML_META_TAGS   = "Metas";
 	public static final String HTML_SCRIPT_TAGS = "Scripts";
-
+	public static final String HTML_TEXT        = "Text";
 }

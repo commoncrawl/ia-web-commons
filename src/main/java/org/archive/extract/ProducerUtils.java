@@ -29,7 +29,7 @@ public class ProducerUtils {
 	    wf.setStrict(STRICT_GZ);
 		File file = new File(path);
 
-	    if(path.startsWith("hdfs://")) {
+	    if(path.startsWith("hdfs://") || path.startsWith("s3a://")) {
 	    	String name = file.getName();
 	    	Path fsPath = new Path(path);
 	    	FileSystem fs = fsPath.getFileSystem(new Configuration());
@@ -65,7 +65,15 @@ public class ProducerUtils {
 
 	    } else {
 
-	    	if(!(file.exists() && file.canRead())) {
+			if(path.startsWith("file:/")) {
+				file = new File(new URL(path).getPath());
+			}
+
+			if(!file.exists()) {
+				System.err.println(path + ": file not found.");
+				return null;
+			}
+			if(!file.canRead()) {
 				System.err.println(path + " is not a readable file.");
 				return null;
 			}

@@ -16,14 +16,17 @@ import org.htmlparser.Attribute;
 import org.htmlparser.nodes.RemarkNode;
 import org.htmlparser.nodes.TagNode;
 import org.htmlparser.nodes.TextNode;
+import org.htmlparser.util.Translate;
 
 public class ExtractingParseObserver implements ParseObserver {
 
 	HTMLMetaData data;
 	Stack<ArrayList<String>> openAnchors;
 	Stack<StringBuilder> openAnchorTexts;
+	StringBuffer textExtract;
 	String title = null;
 	boolean inTitle = false;
+	boolean inPre = false;
 
 	protected static String cssUrlPatString = 
 		"url\\s*\\(\\s*((?:\\\\?[\"'])?.+?(?:\\\\?[\"'])?)\\s*\\)";
@@ -84,6 +87,7 @@ public class ExtractingParseObserver implements ParseObserver {
 		this.data = data;
 		openAnchors = new Stack<ArrayList<String>>();
 		openAnchorTexts = new Stack<StringBuilder>();
+		textExtract = new StringBuffer(8192);
 	}
 	
 	public void handleDocumentStart() {
@@ -91,7 +95,10 @@ public class ExtractingParseObserver implements ParseObserver {
 	}
 
 	public void handleDocumentComplete() {
-		// no-op
+		if (textExtract.length() > 0) {
+			data.setTextExtract(textExtract.toString());
+			textExtract = new StringBuffer(8192);
+		}
 	}
 
 	public void handleTagEmpty(TagNode tag) {
@@ -103,6 +110,8 @@ public class ExtractingParseObserver implements ParseObserver {
 		if(name.equals("TITLE")) {
 			inTitle = !tag.isEmptyXmlTag();
 			return;
+		} else if (name.equals("PRE")) {
+			inPre = true;
 		}
 
 		// first the global attributes:
@@ -134,6 +143,7 @@ public class ExtractingParseObserver implements ParseObserver {
 			// probably the right thing..
 			return;
 		}
+
 		// Only interesting if it's a </a>:
 		if(tag.getTagName().equals("A")) {
 			if(openAnchors.size() > 0) {
@@ -155,12 +165,40 @@ public class ExtractingParseObserver implements ParseObserver {
 					data.addHref(vals);
 				}
 			}
+		} else if (tag.getTagName().equals("PRE")) {
+			inPre = false;
 		}
 	}
 
 	public void handleTextNode(TextNode text) {
 		// TODO: OPTIMIZ: This can be a lot smarter, if StringBuilders are full,
-		//                this result is thrown away.
+		// this result is thrown away.
+		// System.out.println("JDBUG: Got text from node: " +
+		// text.getText().toString());
+
+		String txt = text.getText();
+		if (!inPre) {
+			txt = Translate.decode(txt);
+			txt = txt.replace('\u00a0', ' ');
+
+			char c = ' ';
+			if (textExtract.length() > 0) {
+				c = textExtract.charAt(textExtract.length() - 1);
+			}
+			for (int i = 0; i < txt.length(); i++) {
+				char c2 = txt.charAt(i);
+				// Translate so output is a bit cleaner
+				if (c2 == '\r') {
+					c2 = '\n';
+				}
+				if (!Character.isWhitespace(c) || !Character.isWhitespace(c2)) {
+					textExtract.append(c2);
+				}
+				c = c2;
+			}
+		} else
+			textExtract.append(txt);
+
 		String t = text.getText().replaceAll("\\s+", " ");
 
 		if(t.length() > MAX_TEXT_LEN) {
@@ -406,7 +444,7 @@ public class ExtractingParseObserver implements ParseObserver {
 
 	private static class MetaTagExtractor implements TagExtractor {
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
-			ArrayList<String> l = getAttrList(node,"name","rel","content","http-equiv");
+			ArrayList<String> l = getAttrList(node,"name","rel","content","http-equiv","property");
 			if(l != null) {
 				data.addMeta(l);
 			}
