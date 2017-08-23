@@ -23,7 +23,7 @@ public class ExtractingParseObserver implements ParseObserver {
 	HTMLMetaData data;
 	Stack<ArrayList<String>> openAnchors;
 	Stack<StringBuilder> openAnchorTexts;
-	StringBuffer textExtract;
+	StringBuilder textExtract;
 	String title = null;
 	boolean inTitle = false;
 	boolean inPre = false;
@@ -43,6 +43,27 @@ public class ExtractingParseObserver implements ParseObserver {
 	protected static Pattern cssUrlTrimPattern = Pattern.compile(cssUrlTrimPatString);
 
 	private final static int MAX_TEXT_LEN = 100;
+
+	private final static String[] BLOCK_ELEMENTS = { "address", "article", "aside", "blockquote", "body", "br",
+			"button", "canvas", "caption", "col", "colgroup", "dd", "div", "dl", "dt", "embed", "fieldset",
+			"figcaption", "figure", "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "header", "hgroup", "hr",
+			"li", "map", "noscript", "object", "ol", "output", "p", "pre", "progress", "section", "table", "tbody",
+			"textarea", "tfoot", "th", "thead", "tr", "ul", "video" };
+	private static final Set<String> blockElements;
+	/* inline elements which content is not melted with surrounding words */
+	private final static String[] INLINE_ELEMENTS_SPACING = { "address", "cite", "details", "datalist", "iframe", "img",
+			"input", "label", "legend", "optgroup", "q", "select", "summary", "tbody", "td", "time" };
+	private static final Set<String> inlineSpacingElements;
+	static {
+		blockElements = new HashSet<String>();
+		for (String el : BLOCK_ELEMENTS) {
+			blockElements.add(el.toUpperCase(Locale.ROOT));
+		}
+		inlineSpacingElements = new HashSet<String>();
+		for (String el : INLINE_ELEMENTS_SPACING) {
+			inlineSpacingElements.add(el.toUpperCase(Locale.ROOT));
+		}
+	}
 
 	private static final String PATH = "path";
 	private static final String PATH_SEPARATOR = "@/";
@@ -87,7 +108,7 @@ public class ExtractingParseObserver implements ParseObserver {
 		this.data = data;
 		openAnchors = new Stack<ArrayList<String>>();
 		openAnchorTexts = new Stack<StringBuilder>();
-		textExtract = new StringBuffer(8192);
+		textExtract = new StringBuilder(8192);
 	}
 	
 	public void handleDocumentStart() {
@@ -97,7 +118,7 @@ public class ExtractingParseObserver implements ParseObserver {
 	public void handleDocumentComplete() {
 		if (textExtract.length() > 0) {
 			data.setTextExtract(textExtract.toString());
-			textExtract = new StringBuffer(8192);
+			textExtract = new StringBuilder(8192);
 		}
 	}
 
@@ -112,6 +133,12 @@ public class ExtractingParseObserver implements ParseObserver {
 			return;
 		} else if (name.equals("PRE")) {
 			inPre = true;
+		}
+
+		if (blockElements.contains(name)) {
+			appendParagraphSeparator(textExtract);
+		} else if (inlineSpacingElements.contains(name)) {
+			appendSpace(textExtract);
 		}
 
 		// first the global attributes:
@@ -136,16 +163,22 @@ public class ExtractingParseObserver implements ParseObserver {
 	}
 
 	public void handleTagClose(TagNode tag) {
+		String name = tag.getTagName();
+
 		if(inTitle) {
 			inTitle = false;
 			data.setTitle(title);
 			title = null;
-			// probably the right thing..
-			return;
+		}
+
+		if (blockElements.contains(name)) {
+			appendParagraphSeparator(textExtract);
+		} else if (inlineSpacingElements.contains(name)) {
+			appendSpace(textExtract);
 		}
 
 		// Only interesting if it's a </a>:
-		if(tag.getTagName().equals("A")) {
+		if(name.equals("A")) {
 			if(openAnchors.size() > 0) {
 				// TODO: what happens here when we get unaligned (extra </a>'s?)
 				ArrayList<String> vals = openAnchors.pop();
@@ -173,12 +206,12 @@ public class ExtractingParseObserver implements ParseObserver {
 	public void handleTextNode(TextNode text) {
 		// TODO: OPTIMIZ: This can be a lot smarter, if StringBuilders are full,
 		// this result is thrown away.
-		// System.out.println("JDBUG: Got text from node: " +
-		// text.getText().toString());
 
 		String txt = text.getText();
-		if (!inPre) {
-			txt = Translate.decode(txt);
+		txt = Translate.decode(txt);
+		if (inPre) {
+			textExtract.append(txt);
+		} else {
 			txt = txt.replace('\u00a0', ' ');
 
 			char c = ' ';
@@ -187,17 +220,15 @@ public class ExtractingParseObserver implements ParseObserver {
 			}
 			for (int i = 0; i < txt.length(); i++) {
 				char c2 = txt.charAt(i);
-				// Translate so output is a bit cleaner
-				if (c2 == '\r') {
-					c2 = '\n';
+				if (c2 == '\r' || c2 == '\n') {
+					c2 = ' ';
 				}
 				if (!Character.isWhitespace(c) || !Character.isWhitespace(c2)) {
 					textExtract.append(c2);
 				}
 				c = c2;
 			}
-		} else
-			textExtract.append(txt);
+		}
 
 		String t = text.getText().replaceAll("\\s+", " ");
 
@@ -307,6 +338,29 @@ public class ExtractingParseObserver implements ParseObserver {
 			data.addHref(l);
 		}
 	}	
+
+	private static void appendParagraphSeparator(StringBuilder sb) {
+		int length = sb.length();
+		if (length > 0) {
+			// remove white space before paragraph break
+			while (length > 0 && sb.charAt(length - 1) == ' ') {
+				sb.deleteCharAt(--length);
+			}
+			if (length > 0 && sb.charAt(length - 1) != '\n') {
+				sb.append('\n');
+			}
+		}
+	}
+
+	private static void appendSpace(StringBuilder sb) {
+		int length = sb.length();
+		if (length > 0) {
+			char lastBufferChar = sb.charAt(length - 1);
+			if (lastBufferChar != ' ' && lastBufferChar != '\n') {
+				sb.append(' ');
+			}
+		}
+	}
 
 	private interface TagExtractor {
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs);

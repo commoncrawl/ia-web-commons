@@ -11,6 +11,7 @@ import org.archive.extract.ProducerUtils;
 import org.archive.extract.ResourceFactoryMapper;
 import org.archive.resource.MetaData;
 import org.archive.resource.Resource;
+import org.archive.resource.ResourceConstants;
 import org.archive.resource.ResourceParseException;
 import org.archive.resource.ResourceProducer;
 import org.htmlparser.nodes.TextNode;
@@ -281,6 +282,35 @@ public class ExtractingParseObserverTest extends TestCase {
 				{"http://www.your-domain.com/your-page.html", "DIV@/data-href"}
 		};
 		checkLinks(extractor.getNext(), fbSocialLinks);
+	}
+
+	public void testTextExtraction() throws ResourceParseException, IOException {
+		String testFileName = "text-extraction-test.warc";
+		ResourceProducer producer = ProducerUtils.getProducer(getClass().getResource(testFileName).getPath());
+		ResourceFactoryMapper mapper = new ExtractingResourceFactoryMapper();
+		ExtractingResourceProducer extractor = new ExtractingResourceProducer(producer, mapper);
+		extractor.getNext(); // skip warcinfo record
+		Resource resource = extractor.getNext();
+		assertNotNull(resource);
+		assertTrue("Wrong instance type of Resource: " + resource.getClass(), resource instanceof HTMLResource);
+		String text = resource.getMetaData().getString(ResourceConstants.HTML_TEXT);
+		System.out.println(text);
+		assertTrue(text.contains("text\nThere should be a paragraph break after <h1-h6>"));
+		assertTrue(text.contains("«foobarfoo»"));
+		assertFalse(text.contains("«foo bar foo»"));
+		assertTrue(text.contains("comments: nospace"));
+		assertFalse(text.contains("before an imageand after"));
+		assertFalse(text.contains("firstsecond line"));
+		assertFalse(text.contains("first linediv element"));
+		assertFalse(text.contains("div elementsecond line"));
+		assertFalse(text.contains("2017by"));
+		assertFalse(text.contains("Heath9"));
+		assertFalse(text.contains("readAdd"));
+		assertTrue(text.contains("read\nAdd"));
+		assertFalse(text.contains("first linesecond line"));
+		assertTrue(text.contains("first line\nsecond line\n<entity>"));
+		// TODO: CDATA in mathml not correctly parsed
+		// assertTrue(text.matches("CDATA in MathML:\\W*x<y"));
 	}
 
 }
