@@ -141,8 +141,15 @@ public class ExtractingParseObserverTest extends TestCase {
 	}
 	
 	private void checkLink(Multimap<String,String> links, String url, String path) {
-		assertTrue("Link with URL " + url + " not found", links.containsKey(url));
+		assertTrue("Link with URL " + url + " not found in [" + String.join(", ", links.keySet()) + "]",
+				links.containsKey(url));
 		assertTrue("Wrong path " + path + " for " + url, links.get(url).contains(path));
+	}
+
+	private void checkAnchor(Multimap<String,String> anchors, String url, String anchor) {
+		assertTrue("Anchor for URL " + url + " not found in [" + String.join(", ", anchors.keySet()) + "]",
+				anchors.containsKey(url));
+		assertTrue("Wrong anchor text " + anchor + " for " + url, anchors.get(url).contains(anchor));
 	}
 
 	private void checkLinks(Resource resource, String[][] expectedLinks) {
@@ -151,6 +158,7 @@ public class ExtractingParseObserverTest extends TestCase {
 		MetaData md = resource.getMetaData();
 		LOG.info(md.toString());
 		Multimap<String, String> links = ArrayListMultimap.create();
+		Multimap<String, String> anchors = ArrayListMultimap.create();
 		JSONObject head = md.optJSONObject("Head");
 		if (head != null) {
 			// <base href="http://www.example.com/" />
@@ -189,9 +197,22 @@ public class ExtractingParseObserverTest extends TestCase {
 			for (int i = 0; i < ldata.length(); i++) {
 				JSONObject o = (JSONObject) ldata.optJSONObject(i);
 				try {
-					String url = o.getString("url");
+					String url;
+					if (o.has("url")) {
+						url = o.getString("url");
+					} else if (o.has("href")) {
+						url = o.getString("href");
+					} else {
+						fail("No URL found in: " + o);
+						continue;
+					}
 					links.put(url, o.getString("path"));
-					LOG.info(" found link: " + o.getString("url") + " " + o.getString("path"));
+					LOG.info(" found link: " + url + " " + o.getString("path"));
+					if (o.has("text")) {
+						anchors.put(url, o.getString("text"));
+					} else if (o.has("alt")) {
+						anchors.put(url, o.getString("alt"));
+					}
 				} catch (JSONException e) {
 					fail("Failed to extract URL from link: " + e.getMessage());
 				}
@@ -200,6 +221,9 @@ public class ExtractingParseObserverTest extends TestCase {
 		assertEquals("Unexpected number of links", expectedLinks.length, links.size());
 		for (String[] l : expectedLinks) {
 			checkLink(links, l[0], l[1]);
+			if (l.length > 2 && l[2] != null) {
+				checkAnchor(anchors, l[0], l[2]);
+			}
 		}
 	}
 
@@ -225,8 +249,8 @@ public class ExtractingParseObserverTest extends TestCase {
 		};
 		checkLinks(extractor.getNext(), html4links);
 		String[][] html5links = {
-				{"http:///www.example.com/video.html", "LINK@/href", "canonical"},
-				{"video.rss", "LINK@/href", "alternate"},
+				{"http:///www.example.com/video.html", "LINK@/href", null, "canonical"},
+				{"video.rss", "LINK@/href", null, "alternate"},
 				{"https://archive.org/download/WebmVp8Vorbis/webmvp8.gif", "VIDEO@/poster"},
 				{"https://archive.org/download/WebmVp8Vorbis/webmvp8.webm", "SOURCE@/src"},
 				{"https://archive.org/download/WebmVp8Vorbis/webmvp8_512kb.mp4", "SOURCE@/src"},
@@ -245,7 +269,7 @@ public class ExtractingParseObserverTest extends TestCase {
 		};
 		checkLinks(extractor.getNext(), fbVideoLinks);
 		String[][] dataHrefLinks = {
-				{"standard.css", "LINK@/href", "stylesheet"},
+				{"standard.css", "LINK@/href", null, "stylesheet"},
 				{"https://www.facebook.com/elegantthemes/videos/10153760379211923/", "DIV@/data-href"},
 				{"https://www.facebook.com/facebook/videos/10153231379946729/", "DIV@/data-href"},
 				{"https://www.facebook.com/facebook/videos/10153231379946729/", "BLOCKQUOTE@/cite"},
@@ -265,9 +289,9 @@ public class ExtractingParseObserverTest extends TestCase {
 				{"jackbox/img/thumbs/4.jpg",  "IMG@/src"},
 				{"//venobox-destination", "A@/data-href"},
 				{"#", "A@/href"},
-				{"http://www.youtube.com/v/itTskyFLSS8&amp;rel=0&amp;autohide=1&amp;showinfo=0&amp;autoplay=1", "DIV@/data-href"},
+				{"http://www.youtube.com/v/itTskyFLSS8&rel=0&autohide=1&showinfo=0&autoplay=1", "DIV@/data-href"},
 				{"#", "A@/href"},
-				{"http://www.youtube.com/v/itTskyFLSS8&amp;rel=0&amp;autohide=1&amp;showinfo=0", "IFRAME@/src"}
+				{"http://www.youtube.com/v/itTskyFLSS8&rel=0&autohide=1&showinfo=0", "IFRAME@/src"}
 		};
 		checkLinks(extractor.getNext(), dataHrefLinks);
 		String[][] fbSocialLinks = {
@@ -292,6 +316,30 @@ public class ExtractingParseObserverTest extends TestCase {
 				{"http://example.com/location/href/2.html", "INPUT@/onclick"}
 		};
 		checkLinks(extractor.getNext(), onClickLinks);
+		String[][] escapedEntitiesLinks = {
+				{"http://www.example.com/", "__base__"},
+				{"http://www.example.com/redirected.html", "__meta_refresh__"},
+				{"/view?id=logo&action=edit", "A@/href"},
+				{"http://www.example.com/search?q=examples&n=20", "A@/href", "Examples & more"},
+				{"/view?id=logo&res=420x180", "STYLE/#text"},
+				{"https://img.example.org/view?id=867&res=10x16", "IMG@/src",
+					"image URL containing escaped ampersand (\"&amp;\")" }
+		};
+		Resource resource = extractor.getNext();
+		assertNotNull(resource);
+		checkLinks(resource, escapedEntitiesLinks);
+		MetaData md = resource.getMetaData();
+		assertEquals("Wrong title", "Title – \"Title\" written using character entities",
+				md.getJSONObject(ResourceConstants.HTML_HEAD).getString(ResourceConstants.HTML_TITLE));
+		JSONArray metas = md.getJSONObject(ResourceConstants.HTML_HEAD).getJSONArray(ResourceConstants.HTML_META_TAGS);
+		for (int i = 0; i < metas.length(); i++) {
+			JSONObject o = (JSONObject) metas.optJSONObject(i);
+			String property = o.optString("property");
+			if (property.equals("og:description")) {
+				String content = o.optString("content");
+				assertEquals(content, "Apostrophe's description");
+			}
+		}
 	}
 
 	public void testTextExtraction() throws ResourceParseException, IOException {

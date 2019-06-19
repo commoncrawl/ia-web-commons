@@ -161,6 +161,7 @@ public class ExtractingParseObserver implements ParseObserver {
 			}
 			attrName = attrName.toLowerCase(Locale.ROOT);
 			if (globalHrefAttributes.contains(attrName)) {
+				attrValue = Translate.decode(attrValue);
 				data.addHref(PATH,makePath(name,attrName),"url",attrValue);
 			}
 		}
@@ -196,7 +197,7 @@ public class ExtractingParseObserver implements ParseObserver {
 				if((vals != null) && (vals.size() > 0)) {
 					if(text != null) {
 						// contained an href - we want to ignore <a name="X"></a>:
-						String trimmed = text.toString().trim().replaceAll("\\s+", " ");
+						String trimmed = Translate.decode(text.toString()).trim().replaceAll("\\s+", " ");
 						if(trimmed.length() > MAX_TEXT_LEN) {
 							trimmed = trimmed.substring(0,MAX_TEXT_LEN);
 						}
@@ -240,7 +241,7 @@ public class ExtractingParseObserver implements ParseObserver {
 			}
 		}
 
-		String t = text.getText().replaceAll("\\s+", " ");
+		String t = txt.replaceAll("\\s+", " ");
 
 		if(t.length() > MAX_TEXT_LEN) {
 			t = t.substring(0,MAX_TEXT_LEN);
@@ -271,8 +272,9 @@ public class ExtractingParseObserver implements ParseObserver {
 	}
 
 	public void handleStyleNode(TextNode text) {
-		patternCSSExtract(data, cssUrlPattern, text.getText());
-		patternCSSExtract(data, cssImportNoUrlPattern, text.getText());
+		String cssStr = Translate.decode(text.getText());
+		patternCSSExtract(data, cssUrlPattern, cssStr);
+		patternCSSExtract(data, cssImportNoUrlPattern, cssStr);
 	}
 
 	public void handleRemarkNode(RemarkNode remark) {
@@ -299,6 +301,7 @@ public class ExtractingParseObserver implements ParseObserver {
 		for(String attr : attrs) {
 			String val = node.getAttribute(attr);
 			if(val != null) {
+				val = Translate.decode(val);
 				data.addHref(PATH,makePath(node.getTagName(),attr),"url",val);
 			}
 		}
@@ -309,6 +312,7 @@ public class ExtractingParseObserver implements ParseObserver {
 		for(String attr : attrs) {
 			String val = node.getAttribute(attr);
 			if(val != null) {
+				val = Translate.decode(val);
 				l.add(attr);
 				l.add(val);
 			}
@@ -324,6 +328,7 @@ public class ExtractingParseObserver implements ParseObserver {
 		String url = node.getAttribute(urlAttr);
 		ArrayList<String> l = null;
 		if(url != null) {
+			url = Translate.decode(url);
 			l = new ArrayList<String>();
 			l.add(PATH);
 			l.add(makePath(node.getTagName(),urlAttr));
@@ -333,6 +338,7 @@ public class ExtractingParseObserver implements ParseObserver {
 			for(String attr : optionalAttrs) {
 				String val = node.getAttribute(attr);
 				if(val != null) {
+					val = Translate.decode(val);
 					l.add(attr);
 					l.add(val);
 				}
@@ -356,6 +362,7 @@ public class ExtractingParseObserver implements ParseObserver {
 			for (Pattern pattern : jsOnClickUrlPatterns) {
 				String url = patternJSExtract(pattern, onclick);
 				if (url != null) {
+					// TODO: translate?
 					data.addHref(PATH, path, "url", url);
 				}
 			}
@@ -395,6 +402,7 @@ public class ExtractingParseObserver implements ParseObserver {
 			String url = node.getAttribute("href");
 			if(url != null) {
 				// got data:
+				url = Translate.decode(url);
 				l.add(PATH);
 				l.add(makePath("A","href"));
 				l.add("url");
@@ -402,6 +410,7 @@ public class ExtractingParseObserver implements ParseObserver {
 				for(String a : new String[] {"target","alt","title","rel","hreflang","type"}) {
 					String v = node.getAttribute(a);
 					if(v != null) {
+						v = Translate.decode(v);
 						l.add(a);
 						l.add(v);
 					}
@@ -428,6 +437,7 @@ public class ExtractingParseObserver implements ParseObserver {
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			String url = node.getAttribute("href");
 			if(url != null) {
+				url = Translate.decode(url);
 				ArrayList<String> l = new ArrayList<String>();
 				l.add(PATH);
 				l.add(makePath("AREA","href"));
@@ -449,6 +459,7 @@ public class ExtractingParseObserver implements ParseObserver {
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			String url = node.getAttribute("href");
 			if(url != null) {
+				url = Translate.decode(url);
 				data.setBaseHref(url);
 			}
 		}
@@ -483,6 +494,7 @@ public class ExtractingParseObserver implements ParseObserver {
 			ArrayList<String> l = new ArrayList<String>();
 			String url = node.getAttribute("action");
 			if(url != null) {
+				url = Translate.decode(url);
 				// got data:
 				l.add(PATH);
 				l.add(makePath("FORM","action"));
