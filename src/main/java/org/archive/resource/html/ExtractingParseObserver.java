@@ -51,6 +51,8 @@ public class ExtractingParseObserver implements ParseObserver {
 			Pattern.compile(jsOnClickUrl2PatString)
 	};
 
+	protected static Pattern wsPattern = Pattern.compile("\\s+");
+
 	private final static int MAX_TEXT_LEN = 100;
 
 	private final static String[] BLOCK_ELEMENTS = { "address", "article", "aside", "blockquote", "body", "br",
@@ -197,7 +199,7 @@ public class ExtractingParseObserver implements ParseObserver {
 				if((vals != null) && (vals.size() > 0)) {
 					if(text != null) {
 						// contained an href - we want to ignore <a name="X"></a>:
-						String trimmed = Translate.decode(text.toString()).trim().replaceAll("\\s+", " ");
+						String trimmed = wsPattern.matcher(Translate.decode(text.toString()).trim()).replaceAll(" ");
 						if(trimmed.length() > MAX_TEXT_LEN) {
 							trimmed = trimmed.substring(0,MAX_TEXT_LEN);
 						}
@@ -241,7 +243,7 @@ public class ExtractingParseObserver implements ParseObserver {
 			}
 		}
 
-		String t = txt.replaceAll("\\s+", " ");
+		String t = wsPattern.matcher(txt).replaceAll(" ");
 
 		if(t.length() > MAX_TEXT_LEN) {
 			t = t.substring(0,MAX_TEXT_LEN);
