@@ -126,6 +126,7 @@ This is valid HTML5!
 <P>paragraph one with <A hRef = http://www.example.com/ >link</a>.
 
 
+
 WARC/1.0
 WARC-Type: response
 WARC-Target-URI: http://www.example.com/fb-video.html
@@ -321,6 +322,7 @@ Content-Type: text/html
 WARC/1.0
 WARC-Type: response
 WARC-Date: 2017-08-23T13:54:59Z
+WARC-Target-URI: http://www.example.com/link-extraction-test-onclick-attr.html
 Content-Type: application/http;msgtype=response
 Content-Length: 1279
 
@@ -356,6 +358,47 @@ Content-Type: text/html
   </form>
 
   
+</body>
+</html>
+
+
+WARC/1.0
+WARC-Type: response
+WARC-Target-URI: http://www.example.com/link-extraction-test-unescaped-entities.xhtml
+WARC-Date: 2019-06-19T13:13:38Z
+WARC-IP-Address: 127.0.0.1
+Content-Type: application/http;msgtype=response
+Content-Length: 1520
+
+HTTP/1.1 200 OK
+Date: Wed, 19 Jun 2019 13:13:38 GMT
+Server: Apache/2.4.29 (Ubuntu)
+Last-Modified: Wed, 19 Jun 2019 13:11:24 GMT
+ETag: "4c6-58bacf761e299"
+Accept-Ranges: bytes
+Content-Length: 1223
+Keep-Alive: timeout=5, max=100
+Connection: Keep-Alive
+Content-Type: application/xhtml+xml
+
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:og="http://ogp.me/ns#">
+<head>
+<meta property="og:description" content="Apostrophe&#39;s description" />
+<meta content="Apostrophe&apos;s description" name="description" /><!-- Note: &apos; is defined in XML 1.0 but is not part of HTML -->
+<meta http-equiv="Refresh" content="5; URL=http:&#x2f;&#x2f;www.example.com&#x2f;redirected.html" />
+<base href="http://www.example.com/" />
+<title>Title &#8211; &quot;&#84;&#x69;&#116;&#x6c;&#101;&quot; written using character entities</title>
+<style type="text/css">.logo{background-image:url("/view?id=logo&amp;res=420x180"); background-color: #cccccc; display:block; height:180px; width:420px;}</style>
+</head>
+<body>
+<p class="logo">Here is the <a href="/view?id=logo&amp;action=edit">logo</a></p>
+<p>
+<a href="http://www.example.com/search?q&#x3D;examples&amp;n&#x3D;20" target="_blank" rel="nofollow">Examples &amp; more</a>
+<img src="https://img.example.org/view?id=867&amp;res=10x16" alt="image URL containing escaped ampersand (&quot;&amp;amp;&quot;)" />
+</p>
 </body>
 </html>
 
