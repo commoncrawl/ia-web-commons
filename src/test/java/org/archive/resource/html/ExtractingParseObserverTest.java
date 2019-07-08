@@ -15,6 +15,7 @@ import org.archive.resource.ResourceConstants;
 import org.archive.resource.ResourceParseException;
 import org.archive.resource.ResourceProducer;
 import org.htmlparser.nodes.TextNode;
+import org.htmlparser.util.Translate;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -369,6 +370,33 @@ public class ExtractingParseObserverTest extends TestCase {
 		assertTrue(text.contains("first line\nsecond line\n<entity>"));
 		// TODO: CDATA in mathml not correctly parsed
 		// assertTrue(text.matches("CDATA in MathML:\\W*x<y"));
+	}
+
+	public void testHtmlParserEntityDecoding() {
+		String[][] entities = { //
+				// ampersand
+				{ "&amp;", "&" },
+				// apostrophe
+				// TODO: { "&apos;", "'" },
+				// comma
+				// TODO: { "&comma;", "," },
+				// % percent
+				// TODO: { "percnt", "%" },
+				// ’ right single quotation mark
+				{ "&rsquo;", "\u2019" },
+				// » right-pointing double angle quotation mark
+				{ "&raquo", "\u00bb" },
+				// … horizontal ellipsis
+				{ "&hellip;", "\u2026" },
+				// 𤆑 CJK UNIFIED IDEOGRAPH-24191
+				// TODO: { "&#x24191;", new String(Character.toChars(0x24191)) },
+				// 😊 U+1F60A SMILING FACE WITH SMILING EYES
+				// TODO: { "&#x1F60A;", new String(Character.toChars(0x1f60a)) },
+		};
+		for (String[] ent : entities) {
+			String decoded = Translate.decode(ent[0]);
+			assertEquals("Entity " + ent[0] + " not properly decoded", ent[1], decoded);
+		}
 	}
 
 }
