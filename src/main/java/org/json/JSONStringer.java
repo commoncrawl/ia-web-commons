@@ -313,7 +313,6 @@ public class JSONStringer {
             switch (c) {
                 case '"':
                 case '\\':
-                case '/':
                     out.append('\\').append(c);
                     break;
 

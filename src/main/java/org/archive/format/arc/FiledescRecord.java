@@ -34,7 +34,7 @@ public class FiledescRecord {
 			JSONObject jo = new JSONObject();
 			jo.put("name", name);
 			jo.put("value", value);
-			metadata.append("MetaData",jo);
+			metadata.accumulate("MetaData",jo);
 		} catch(JSONException e) {
 			LOG.warning(e.getMessage());			
 		}

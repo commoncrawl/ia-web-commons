@@ -14,7 +14,7 @@ public class JSONViewTest extends TestCase {
 	
 	public void testBytes() throws JSONException {
 		JSONObject o = new JSONObject();
-		o.append("name1", "val\\rue1");
+		o.accumulate("name1", "val\\rue1");
 		String json = o.toString();
 		System.out.format("once: (%s)\n",json);
 		JSONObject o2 = new JSONObject(json);

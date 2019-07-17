@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 
+import com.google.common.io.CharStreams;
 import org.archive.resource.MetaData;
 import org.archive.resource.Resource;
 import org.archive.resource.ResourceConstants;
@@ -27,7 +28,8 @@ public class WARCJSONMetaDataResourceFactory implements ResourceFactory, Resourc
 
 		MetaData md;
 		try {
-			md = new MetaData(new JSONTokener(new InputStreamReader(is, UTF8)));
+			String input = CharStreams.toString(new InputStreamReader(is, UTF8));
+			md = new MetaData(new JSONTokener(input));
 		} catch (JSONException e) {
 			throw new ResourceParseException(e);
 		}

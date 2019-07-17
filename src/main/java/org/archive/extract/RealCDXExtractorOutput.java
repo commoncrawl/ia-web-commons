@@ -7,6 +7,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -337,7 +338,14 @@ public class RealCDXExtractorOutput implements ExtractorOutput {
 //				// TODO Auto-generated catch block
 //				e1.printStackTrace();
 //			}
-			for(String key : JSONObject.getNames(o)) {
+			Iterator<String> namesIterator = o.keys();
+			String[] names = new String[o.length()];
+			int i = 0;
+			while(namesIterator.hasNext()) {
+				names[i] = namesIterator.next();
+				i++;
+			}
+			for(String key : names) {
 				if(lc.equals(key.toLowerCase().trim())) {
 					try {
 						return o.getString(key).trim();

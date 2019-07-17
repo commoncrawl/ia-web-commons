@@ -41,7 +41,7 @@ package org.json;
  *     }
  * }</pre>
  */
-public class JSONException extends Exception {
+public class JSONException extends RuntimeException {
 
     public JSONException(String s) {
         super(s);

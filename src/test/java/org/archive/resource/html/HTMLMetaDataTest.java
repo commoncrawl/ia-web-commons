@@ -15,10 +15,10 @@ public class HTMLMetaDataTest extends TestCase {
 		JSONObject data = new JSONObject();
 		JSONObject links = new JSONObject();
 		JSONObject header = new JSONObject();
-		links.append("link1", "link1.val");
-		data.append("links", links);
-		links.append("link2", "link2.val");
-		data.append("header", header);
+		links.accumulate("link1", "link1.val");
+		data.accumulate("links", links);
+		links.accumulate("link2", "link2.val");
+		data.accumulate("header", header);
 
 		header.put("header1", "header1.val");
 		header.put("header1", "header1.va2222l");
@@ -53,7 +53,7 @@ public class HTMLMetaDataTest extends TestCase {
 			}
 			n.put(i[0], i[1]);
 		}
-		o.append("links", n);
+		o.accumulate("links", n);
 	}
 	private void appendStrArr2(JSONObject o, String k, String... a) throws JSONException {
 		
@@ -65,7 +65,7 @@ public class HTMLMetaDataTest extends TestCase {
 		for(int i = 0; i < a.length; i+=2) {
 			n.put(a[i], a[i+1]);
 		}
-		o.append(k, n);
+		o.accumulate(k, n);
 //		for(String i[] : a) {
 //			if(i.length != 2) {
 //				throw new IllegalArgumentException();
