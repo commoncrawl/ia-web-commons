@@ -177,12 +177,8 @@ public class WATExtractorOutput implements ExtractorOutput {
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
 		OutputStreamWriter osw = new OutputStreamWriter(bos, UTF8);
-		try {
-			md.write(osw);
-		} catch (JSONException e1) {
-			e1.printStackTrace();
-			throw new IOException(e1);
-		}
+		String contents = md.toString();
+		osw.write(contents, 0, contents.length());
 		osw.flush();
 //		ByteArrayInputStream bais = new ByteArrayInputStream(md.toString().getBytes("UTF-8"));
 		Date capDate;
