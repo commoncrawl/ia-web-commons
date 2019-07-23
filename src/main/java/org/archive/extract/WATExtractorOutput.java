@@ -22,7 +22,7 @@ import org.archive.util.IAUtils;
 import org.archive.util.DateUtils;
 import org.archive.util.StreamCopy;
 import org.archive.util.io.CommitedOutputStream;
-import org.json.JSONException;
+import com.github.openjson.JSONException;
 
 import java.net.InetAddress;
 import java.text.DateFormat;
