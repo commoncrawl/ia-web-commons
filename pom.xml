@@ -74,9 +74,9 @@
     </dependency>
 
     <dependency>
-      <groupId>com.tdunning</groupId>
-      <artifactId>json</artifactId>
-      <version>1.8</version>
+      <groupId>com.github.openjson</groupId>
+      <artifactId>openjson</artifactId>
+      <version>1.0.11</version>
     </dependency>
 
     <dependency>
