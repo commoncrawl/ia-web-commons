@@ -72,12 +72,13 @@
       <artifactId>guava</artifactId>
       <version>14.0.1</version>
     </dependency>
-    
+
     <dependency>
-      <groupId>org.json</groupId>
-      <artifactId>json</artifactId>
-      <version>20131018</version>
+      <groupId>com.github.openjson</groupId>
+      <artifactId>openjson</artifactId>
+      <version>1.0.11</version>
     </dependency>
+
     <dependency>
       <groupId>org.htmlparser</groupId>
       <artifactId>htmlparser</artifactId>
@@ -89,7 +90,7 @@
       <artifactId>juniversalchardet</artifactId>
       <version>1.0.3</version>
     </dependency>
-    
+
     <dependency>
       <groupId>commons-httpclient</groupId>
       <artifactId>commons-httpclient</artifactId>
@@ -185,8 +186,21 @@
           <groupId>ch.qos.logback</groupId>
           <artifactId>logback-classic</artifactId>
         </exclusion>
+        <!-- exclude the vulnerable commons-collections v3.2.1 -->
+        <exclusion>
+          <groupId>commons-collections</groupId>
+          <artifactId>commons-collections</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
+
+    <!-- explicitly require a patched commons-collections to avoid vulnerable v3.2.1 -->
+    <dependency>
+      <groupId>commons-collections</groupId>
+      <artifactId>commons-collections</artifactId>
+      <version>3.2.2</version>
+    </dependency>
+
     <dependency>
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpcore</artifactId>
