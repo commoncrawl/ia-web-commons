@@ -610,7 +610,11 @@ public class ExtractingParseObserver implements ParseObserver {
 		return null;
 	}
 
-	public static String decodeCharEnt(String ent) {
-		return org.apache.commons.lang.StringEscapeUtils.unescapeHtml(ent);
+	public static String decodeCharEnt(String text) {
+		try {
+			return org.apache.commons.text.StringEscapeUtils.unescapeHtml4(text);
+		} catch (Throwable e) {
+			return text;
+		}
 	}
 }

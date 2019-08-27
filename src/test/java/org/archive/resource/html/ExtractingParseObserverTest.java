@@ -374,30 +374,49 @@ public class ExtractingParseObserverTest extends TestCase {
 
 	public void testHtmlParserEntityDecoding() {
 		String[][] entities = { //
-				// ampersand
+				/* ampersand */
 				{ "&amp;", "&" },
-				// apostrophe
+				/* apostrophe */
 				// TODO: { "&apos;", "'" },
-				// comma
+				/* comma */
 				// TODO: { "&comma;", "," },
-				// % percent
-				// TODO: { "percnt", "%" },
-				// ’ right single quotation mark
+				/* % percent */
+				// TODO: { "&percnt;", "%" },
+				/* ’ right single quotation mark */
 				{ "&rsquo;", "\u2019" },
-				// » right-pointing double angle quotation mark
+				/* » right-pointing double angle quotation mark */
 				{ "&raquo;", "\u00bb" },
-				// … horizontal ellipsis
+				/* … horizontal ellipsis */
 				{ "&hellip;", "\u2026" },
-				// 𤆑 CJK UNIFIED IDEOGRAPH-24191
-				// TODO: { "&#x24191;", new String(Character.toChars(0x24191)) },
-				// 😊 U+1F60A SMILING FACE WITH SMILING EYES
-				// TODO: { "&#x1F60A;", new String(Character.toChars(0x1f60a)) },
-				// must not touch "&order=" and never decode "&or" as "&or;"
-				{ "&order=lexical", "&order=lexical" },
+				/* 𤆑 CJK UNIFIED IDEOGRAPH-24191 */
+				{ "&#x24191;", new String(Character.toChars(0x24191)) },
+				/* 😊 U+1F60A SMILING FACE WITH SMILING EYES */
+				{ "&#x1F60A;", new String(Character.toChars(0x1f60a)) },
+				/*
+				 * must not decode "&or" in "&order" as "&or;" (∨ U+2228) to
+				 * avoid that unescaped ampersands in URLs cause erroneous
+				 * replacements
+				 */
+				{ "https://example.org/search?q=example&order=lexical",
+						"https://example.org/search?q=example&order=lexical" },
+				{ "https://example.org/search?q=example&amp;order=lexical",
+					"https://example.org/search?q=example&order=lexical" },
+				{ "&or;", "\u2228" },
+				/* 👎 U+1F44E THUMBS DOWN SIGN  (must not decode 0x1f44) */
+				{ "&#x1f44e;", new String(Character.toChars(0x1f44e)) },
+				/*
+				 * invalid Unicode code point: make sure that exceptions are
+				 * handled, the actual character may appear as (? or �)
+				 */
+				{ "&#xd83f;", null }, // single char of surrogate pair
+				{ "&#x110000;", null }, //
+				{ "&#2013266048;", null }, //
 		};
 		for (String[] ent : entities) {
 			String decoded = ExtractingParseObserver.decodeCharEnt(ent[0]);
-			assertEquals("Entity " + ent[0] + " not properly decoded", ent[1], decoded);
+			if (ent[1] != null) {
+				assertEquals("Entity " + ent[0] + " not properly decoded", ent[1], decoded);
+			}
 		}
 	}
 
