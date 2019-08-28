@@ -15,7 +15,6 @@ import org.archive.resource.ResourceConstants;
 import org.archive.resource.ResourceParseException;
 import org.archive.resource.ResourceProducer;
 import org.htmlparser.nodes.TextNode;
-import org.htmlparser.util.Translate;
 import com.github.openjson.JSONArray;
 import com.github.openjson.JSONException;
 import com.github.openjson.JSONObject;
@@ -374,28 +373,78 @@ public class ExtractingParseObserverTest extends TestCase {
 
 	public void testHtmlParserEntityDecoding() {
 		String[][] entities = { //
-				// ampersand
+				/* ampersand */
 				{ "&amp;", "&" },
-				// apostrophe
-				// TODO: { "&apos;", "'" },
-				// comma
-				// TODO: { "&comma;", "," },
-				// % percent
-				// TODO: { "percnt", "%" },
-				// ’ right single quotation mark
+				/* apostrophe */
+				{ "&apos;", "'" },
+				{ "&#039;", "'" },
+				/* comma */
+				{ "&comma;", "," },
+				/* % percent */
+				{ "&percnt;", "%" },
+				/* ’ right single quotation mark */
 				{ "&rsquo;", "\u2019" },
-				// » right-pointing double angle quotation mark
-				{ "&raquo", "\u00bb" },
-				// … horizontal ellipsis
+				/* » right-pointing double angle quotation mark */
+				{ "&raquo;", "\u00bb" },
+				/* … horizontal ellipsis */
 				{ "&hellip;", "\u2026" },
-				// 𤆑 CJK UNIFIED IDEOGRAPH-24191
-				// TODO: { "&#x24191;", new String(Character.toChars(0x24191)) },
-				// 😊 U+1F60A SMILING FACE WITH SMILING EYES
-				// TODO: { "&#x1F60A;", new String(Character.toChars(0x1f60a)) },
+				/* 𤆑 CJK UNIFIED IDEOGRAPH-24191 */
+				{ "&#x24191;", new String(Character.toChars(0x24191)) },
+				/* 😊 U+1F60A SMILING FACE WITH SMILING EYES */
+				{ "&#x1F60A;", new String(Character.toChars(0x1f60a)) },
+				/*
+				 * must not decode "&or" in "&order" as "&or;" (∨ U+2228) to
+				 * avoid that unescaped ampersands in URLs cause erroneous
+				 * replacements
+				 */
+				{ "https://example.org/search?q=example&order=lexical",
+						"https://example.org/search?q=example&order=lexical" },
+				{ "https://example.org/search?q=example&amp;order=lexical",
+					"https://example.org/search?q=example&order=lexical" },
+				{ "&or;", "\u2228" },
+				/* 👎 U+1F44E THUMBS DOWN SIGN  (must not decode 0x1f44) */
+				{ "&#x1f44e;", new String(Character.toChars(0x1f44e)) },
+				/*
+				 * invalid Unicode code point: make sure that exceptions are
+				 * handled, the actual character may appear as (? or �)
+				 */
+				{ "&#xd83f;", null }, // single char of surrogate pair
+				{ "&#x110000;", null }, //
+				{ "&#2013266048;", null }, //
+				{ "&#0;", null }, //
+				/*
+				 * for better text conversion, some entities might be decoded
+				 * even if not closed by a ;
+				 */
+				{ "&nbsp&nbsp&nbsp", "\u00a0\u00a0\u00a0" }, //
+				{ "&nbsp", "\u00a0" }, //
+				{ "&order", "&order" }, //
+				/* but never in URLs */
+				{ "https://example.org/search?q=example&nbsp=value",
+						"https://example.org/search?q=example&nbsp=value" }, //
+				/*
+				 * test more aggressive replacement in text mode (not
+				 * inAttribute)
+				 */
+				{ "law&order", "law&order", "false" }, //
+				{ "a &or; b", "a \u2228 b", "false" }, //
+				{ "a &or b", "a &or b", "false" }, //
+				{ "a &amp b", "a & b", "false" }, //
+				/* comparison of text vs. attribute mode */
+				{ "a&nbsp=&nbsp;b", "a&nbsp=\u00a0b", "true" }, //
+				{ "a&nbsp=&nbsp;c", "a\u00a0=\u00a0c", "false" }, //
+				{ "a&nbsp=&nbsp&order=true", "a&nbsp=\u00a0&order=true", "true" }, //
+				{ "a&nbsp=&nbsp&order=true", "a\u00a0=\u00a0&order=true", "false" }, //
 		};
 		for (String[] ent : entities) {
-			String decoded = Translate.decode(ent[0]);
-			assertEquals("Entity " + ent[0] + " not properly decoded", ent[1], decoded);
+			String decoded = ExtractingParseObserver.decodeCharEnt(ent[0]);
+			if (ent.length > 2) {
+				// test for text nodes
+				decoded = ExtractingParseObserver.decodeCharEnt(ent[0], Boolean.valueOf(ent[2]));
+			}
+			if (ent[1] != null) {
+				assertEquals("Entity " + ent[0] + " not properly decoded", ent[1], decoded);
+			}
 		}
 	}
 
