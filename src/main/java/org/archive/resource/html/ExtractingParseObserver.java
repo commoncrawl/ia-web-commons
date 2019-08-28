@@ -16,7 +16,6 @@ import org.htmlparser.Attribute;
 import org.htmlparser.nodes.RemarkNode;
 import org.htmlparser.nodes.TagNode;
 import org.htmlparser.nodes.TextNode;
-import org.htmlparser.util.Translate;
 
 public class ExtractingParseObserver implements ParseObserver {
 
@@ -199,7 +198,7 @@ public class ExtractingParseObserver implements ParseObserver {
 				if((vals != null) && (vals.size() > 0)) {
 					if(text != null) {
 						// contained an href - we want to ignore <a name="X"></a>:
-						String trimmed = wsPattern.matcher(decodeCharEnt(text.toString()).trim()).replaceAll(" ");
+						String trimmed = wsPattern.matcher(decodeCharEnt(text.toString(), false).trim()).replaceAll(" ");
 						if(trimmed.length() > MAX_TEXT_LEN) {
 							trimmed = trimmed.substring(0,MAX_TEXT_LEN);
 						}
@@ -221,7 +220,7 @@ public class ExtractingParseObserver implements ParseObserver {
 		// this result is thrown away.
 
 		String txt = text.getText();
-		txt = decodeCharEnt(txt);
+		txt = decodeCharEnt(txt, false);
 		if (inPre) {
 			textExtract.append(txt);
 		} else {
@@ -611,9 +610,18 @@ public class ExtractingParseObserver implements ParseObserver {
 	}
 
 	public static String decodeCharEnt(String text) {
+		return decodeCharEnt(text, true);
+	}
+
+	public static String decodeCharEnt(String text, boolean inAttribute) {
+		if (text.indexOf('&') == -1) {
+			return text;
+		}
 		try {
-			return org.apache.commons.text.StringEscapeUtils.unescapeHtml4(text);
+			return org.jsoup.parser.Parser.unescapeEntities(text, inAttribute);
 		} catch (Throwable e) {
+			System.err.println(text);
+			e.printStackTrace();
 			return text;
 		}
 	}
