@@ -16,7 +16,6 @@ public class WARCRecordWriter implements WARCConstants, HttpConstants {
 	private static final String SCHEME = "urn:uuid";
 	private static final String SCHEME_COLON = SCHEME + ":";
 	private MessageDigest sha1;
-	private Base32 base32;
 
 	public WARCRecordWriter() {
 		try {
@@ -24,8 +23,6 @@ public class WARCRecordWriter implements WARCConstants, HttpConstants {
 		} catch (NoSuchAlgorithmException e) {
 			throw new RuntimeException(e);
 		}
-
-		base32 = new Base32();
 	}
 
   /** 
@@ -111,7 +108,7 @@ public class WARCRecordWriter implements WARCConstants, HttpConstants {
     writeRecord(out, headers, contents);
   }
 
-  public void writeTextConversionRecord( OutputStream out,
+  public void writeTextConversionRecord(OutputStream out,
                                        byte[] contents,
                                        String targetURI,
                                        Date originalDate,
@@ -131,7 +128,7 @@ public class WARCRecordWriter implements WARCConstants, HttpConstants {
 
   private String contentHash(byte[] content) {
     sha1.reset();
-    return "sha1:" + base32.encode(sha1.digest(content));
+    return "sha1:" + Base32.encode(sha1.digest(content));
   }
 
   private String makeRecordId() 
