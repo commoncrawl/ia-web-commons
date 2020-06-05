@@ -1,6 +1,5 @@
 package org.archive.extract;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -22,11 +21,10 @@ import org.archive.util.IAUtils;
 import org.archive.util.DateUtils;
 import org.archive.util.StreamCopy;
 import org.archive.util.io.CommitedOutputStream;
-import com.github.openjson.JSONException;
+
+import com.github.openjson.JSONObject;
 
 import java.net.InetAddress;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 
 import java.util.logging.Logger;
 
@@ -73,7 +71,12 @@ public class WATExtractorOutput implements ExtractorOutput {
 		}
 
 		// remove the text extracts if it exists
-		JSONUtils.removeObject(top, "Envelope.Payload-Metadata.HTTP-Response-Metadata.HTML-Metadata", "Text");
+		String textExtract = null;
+		JSONObject htmlMeta = JSONUtils.extractObject(top, "Envelope.Payload-Metadata.HTTP-Response-Metadata.HTML-Metadata");
+		if (htmlMeta != null && htmlMeta.has("Text")) {
+			textExtract = htmlMeta.getString("Text");
+			htmlMeta.remove("Text");
+		}
 
 		cos = getOutput();
 		if(envelopeFormat.startsWith("ARC")) {
@@ -85,6 +88,11 @@ public class WATExtractorOutput implements ExtractorOutput {
 			throw new IOException("Unknown Envelope.Format");
 		}
 		cos.commit();
+
+		// restore text extract
+		if (textExtract != null) {
+			htmlMeta.put("Text", textExtract);
+		}
 	}
 
 	private void writeWARCInfo(OutputStream recOut, MetaData md) throws IOException {
@@ -164,23 +172,29 @@ public class WATExtractorOutput implements ExtractorOutput {
 			targetURI = extractOrIO(md, "Envelope.WARC-Header-Metadata.WARC-Target-URI");
 		}
 		// handle date of generation in WARC format
-		DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
-		String capDateString = dateFormat.format(new Date());
+		Date date = new Date();
 		String recId = extractOrIO(md, "Envelope.WARC-Header-Metadata.WARC-Record-ID");
-		writeWARCMDRecord(recOut,md,targetURI,capDateString,recId);
+		writeWARCMDRecord(recOut,md,targetURI,date,recId);
 	}
 
 	private void writeWARCMDRecord(OutputStream recOut, MetaData md, 
-			String targetURI, String capDateString, String recId)
+			String targetURI, Date capDate, String recId)
 	throws IOException {
 
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
 		OutputStreamWriter osw = new OutputStreamWriter(bos, UTF8);
 		String contents = md.toString();
 		osw.write(contents, 0, contents.length());
 		osw.flush();
-//		ByteArrayInputStream bais = new ByteArrayInputStream(md.toString().getBytes("UTF-8"));
+
+		recW.writeJSONMetadataRecord(recOut, bos.toByteArray(),
+				targetURI, capDate, recId);
+	}
+
+	private void writeWARCMDRecord(OutputStream recOut, MetaData md,
+			String targetURI, String capDateString, String recId)
+			throws IOException {
 		Date capDate;
 		try {
 			capDate = DateUtils.getSecondsSinceEpoch(capDateString);
@@ -190,22 +204,7 @@ public class WATExtractorOutput implements ExtractorOutput {
 			// TODO... not the write thing...
 			capDate = new Date();
 		}
-		
-		recW.writeJSONMetadataRecord(recOut, bos.toByteArray(),
-				targetURI, capDate, recId);
+		writeWARCMDRecord(recOut, md, targetURI, capDate, recId);
 	}
 
-	private static String transformWARCDate(final String input) {
-		
-		StringBuilder output = new StringBuilder(14);
-		
-		output.append(input.substring(0,4));
-		output.append(input.substring(5,7));
-		output.append(input.substring(8,10));
-		output.append(input.substring(11,13));
-		output.append(input.substring(14,16));
-		output.append(input.substring(17,19));
-		
-		return output.toString();
-	}
 }

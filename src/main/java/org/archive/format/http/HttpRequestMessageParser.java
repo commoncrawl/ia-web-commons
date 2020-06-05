@@ -181,9 +181,6 @@ public class HttpRequestMessageParser extends HttpMessageParser {
 		}
 		while(buf[idx] == SP) {
 			idx++;
-			if(idx >= len) {
-				throw new HttpParseException("No spaces in message");
-			}
 		}
 		vs = idx;
 		while(idx < len) {

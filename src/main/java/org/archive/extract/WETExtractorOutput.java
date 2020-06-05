@@ -7,17 +7,23 @@ import org.archive.format.json.JSONUtils;
 import org.archive.format.warc.WARCRecordWriter;
 import org.archive.resource.MetaData;
 import org.archive.resource.Resource;
-import org.archive.util.DateUtils;
 import org.archive.util.IAUtils;
 import org.archive.util.StreamCopy;
 import org.archive.util.io.CommitedOutputStream;
 
+import com.github.openjson.JSONObject;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
-import java.text.ParseException;
+import java.nio.charset.StandardCharsets;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * This is for generating a WARC Encapsulated Text file
@@ -31,7 +37,6 @@ public class WETExtractorOutput implements ExtractorOutput {
   private GZIPMemberWriter gzW;
   private static int DEFAULT_BUFFER_RAM = 1024 * 1024;
   private int bufferRAM = DEFAULT_BUFFER_RAM;
-  private final static Charset UTF8 = Charset.forName("UTF-8");
   private String outFilename;
 
   public WETExtractorOutput(OutputStream out) {
@@ -50,37 +55,32 @@ public class WETExtractorOutput implements ExtractorOutput {
   }
 
 
-  private String extractOrIO(MetaData md, String path) throws IOException {
-    String value = JSONUtils.extractSingle(md, path);
-    if(value == null) {
-      throw new IOException("No "+path+" found.");
-    }
-    return value;
-  }
-
   public void output(Resource resource) throws IOException {
     StreamCopy.readToEOF(resource.getInputStream());
     MetaData top = resource.getMetaData().getTopMetaData();
     CommitedOutputStream cos;
 
-    if(!wroteFirst) {
+    if (!wroteFirst) {
       cos = getOutput();
       writeWARCInfo(cos, top);
       cos.commit();
       wroteFirst = true;
     }
     String envelopeFormat = JSONUtils.extractSingle(top, "Envelope.Format");
-    if(envelopeFormat == null) {
+    if (envelopeFormat == null) {
       throw new IOException("Missing Envelope.Format");
     }
 
     String warctype = JSONUtils.extractSingle(top, "Envelope.WARC-Header-Metadata.WARC-Type");
-    if (warctype != null && warctype.equals("response")) {
+    if (warctype == null)
+      return;
+
+    if (warctype.equals("response")) {
       String textExtract = JSONUtils.extractSingle(top, "Envelope.Payload-Metadata.HTTP-Response-Metadata.HTML-Metadata.Text");
 
       if (textExtract != null) {
         cos = getOutput();
-        if(envelopeFormat.startsWith("WARC")) {
+        if (envelopeFormat.startsWith("WARC")) {
           writeWARC(cos, top, textExtract);
         } else {
           // hrm...
@@ -97,7 +97,7 @@ public class WETExtractorOutput implements ExtractorOutput {
     if (filename == null) {
       filename = JSONUtils.extractSingle(md, "Container.Filename");
 
-      if(filename == null) {
+      if (filename == null) {
         throw new IOException("No Container.Filename...");
       }
     }
@@ -126,42 +126,30 @@ public class WETExtractorOutput implements ExtractorOutput {
   }
 
   private void writeWARC(OutputStream recOut, MetaData md, String textExtract) throws IOException {
-    String targetURI = extractOrIO(md, "Envelope.WARC-Header-Metadata.WARC-Target-URI");
-
-    String capDateString = extractOrIO(md, "Envelope.WARC-Header-Metadata.WARC-Date");
-    capDateString = transformWARCDate(capDateString);
-    String recId = extractOrIO(md, "Envelope.WARC-Header-Metadata.WARC-Record-ID");
-    writeWARCMDRecord(recOut, targetURI, capDateString, recId, textExtract);
-  }
-
-  private void writeWARCMDRecord(OutputStream recOut, String targetURI, String capDateString, String recId,
-                                 String textExtract)
-      throws IOException {
-
-    Date capDate;
-    try {
-      capDate = DateUtils.getSecondsSinceEpoch(capDateString);
-
-    } catch (ParseException e) {
-      e.printStackTrace();
-      // TODO... not the write thing...
-      capDate = new Date();
+    JSONObject headers = JSONUtils.extractObject(md, "Envelope.WARC-Header-Metadata");
+    String targetURI = headers.getString("WARC-Target-URI");
+    String capDateString = headers.getString("WARC-Date");
+    String recId = headers.getString("WARC-Record-ID");
+    Map<String, String> addHeaders = null;
+    if (headers.has("WARC-Identified-Content-Language")) {
+      addHeaders = new TreeMap<String, String>();
+      addHeaders.put("WARC-Identified-Content-Language", headers.getString("WARC-Identified-Content-Language"));
     }
-
-    recW.writeTextConversionRecord(recOut, textExtract.getBytes("UTF-8"), targetURI, capDate, recId);
+    writeWARCMDRecord(recOut, targetURI, parseWarcDate(capDateString), recId, textExtract, addHeaders);
   }
 
-  private static String transformWARCDate(final String input) {
-
-    StringBuilder output = new StringBuilder(14);
-
-    output.append(input.substring(0,4));
-    output.append(input.substring(5,7));
-    output.append(input.substring(8,10));
-    output.append(input.substring(11,13));
-    output.append(input.substring(14,16));
-    output.append(input.substring(17,19));
-
-    return output.toString();
+  private static Date parseWarcDate(String capDateString) {
+	Date capDate;
+	ZonedDateTime zdt = ZonedDateTime.from(
+			DateTimeFormatter.ISO_INSTANT.withZone(ZoneId.of(ZoneOffset.UTC.toString())).parse(capDateString));
+	capDate = Date.from(zdt.toInstant());
+	return capDate;
   }
+
+  private void writeWARCMDRecord(OutputStream recOut, String targetURI, Date capDate, String recId,
+                                 String textExtract, Map<String,String> addHeaders)
+      throws IOException {
+    recW.writeTextConversionRecord(recOut, textExtract.getBytes(StandardCharsets.UTF_8), targetURI, capDate, recId, addHeaders);
+  }
+
 }
