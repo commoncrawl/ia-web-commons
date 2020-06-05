@@ -22,6 +22,8 @@ import org.archive.util.DateUtils;
 import org.archive.util.StreamCopy;
 import org.archive.util.io.CommitedOutputStream;
 
+import com.github.openjson.JSONObject;
+
 import java.net.InetAddress;
 
 import java.util.logging.Logger;
@@ -69,7 +71,12 @@ public class WATExtractorOutput implements ExtractorOutput {
 		}
 
 		// remove the text extracts if it exists
-		JSONUtils.removeObject(top, "Envelope.Payload-Metadata.HTTP-Response-Metadata.HTML-Metadata", "Text");
+		String textExtract = null;
+		JSONObject htmlMeta = JSONUtils.extractObject(top, "Envelope.Payload-Metadata.HTTP-Response-Metadata.HTML-Metadata");
+		if (htmlMeta != null && htmlMeta.has("Text")) {
+			textExtract = htmlMeta.getString("Text");
+			htmlMeta.remove("Text");
+		}
 
 		cos = getOutput();
 		if(envelopeFormat.startsWith("ARC")) {
@@ -81,6 +88,11 @@ public class WATExtractorOutput implements ExtractorOutput {
 			throw new IOException("Unknown Envelope.Format");
 		}
 		cos.commit();
+
+		// restore text extract
+		if (textExtract != null) {
+			htmlMeta.put("Text", textExtract);
+		}
 	}
 
 	private void writeWARCInfo(OutputStream recOut, MetaData md) throws IOException {

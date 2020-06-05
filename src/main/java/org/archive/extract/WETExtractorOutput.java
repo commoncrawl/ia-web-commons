@@ -11,6 +11,8 @@ import org.archive.util.IAUtils;
 import org.archive.util.StreamCopy;
 import org.archive.util.io.CommitedOutputStream;
 
+import com.github.openjson.JSONObject;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -20,6 +22,8 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * This is for generating a WARC Encapsulated Text file
@@ -51,14 +55,6 @@ public class WETExtractorOutput implements ExtractorOutput {
   }
 
 
-  private String extractOrIO(MetaData md, String path) throws IOException {
-    String value = JSONUtils.extractSingle(md, path);
-    if(value == null) {
-      throw new IOException("No "+path+" found.");
-    }
-    return value;
-  }
-
   public void output(Resource resource) throws IOException {
     StreamCopy.readToEOF(resource.getInputStream());
     MetaData top = resource.getMetaData().getTopMetaData();
@@ -76,8 +72,10 @@ public class WETExtractorOutput implements ExtractorOutput {
     }
 
     String warctype = JSONUtils.extractSingle(top, "Envelope.WARC-Header-Metadata.WARC-Type");
+    if (warctype == null)
+      return;
 
-    if (warctype != null && warctype.equals("response")) {
+    if (warctype.equals("response")) {
       String textExtract = JSONUtils.extractSingle(top, "Envelope.Payload-Metadata.HTTP-Response-Metadata.HTML-Metadata.Text");
 
       if (textExtract != null) {
@@ -128,11 +126,16 @@ public class WETExtractorOutput implements ExtractorOutput {
   }
 
   private void writeWARC(OutputStream recOut, MetaData md, String textExtract) throws IOException {
-    String targetURI = extractOrIO(md, "Envelope.WARC-Header-Metadata.WARC-Target-URI");
-
-    String capDateString = extractOrIO(md, "Envelope.WARC-Header-Metadata.WARC-Date");
-    String recId = extractOrIO(md, "Envelope.WARC-Header-Metadata.WARC-Record-ID");
-    writeWARCMDRecord(recOut, targetURI, parseWarcDate(capDateString), recId, textExtract);
+    JSONObject headers = JSONUtils.extractObject(md, "Envelope.WARC-Header-Metadata");
+    String targetURI = headers.getString("WARC-Target-URI");
+    String capDateString = headers.getString("WARC-Date");
+    String recId = headers.getString("WARC-Record-ID");
+    Map<String, String> addHeaders = null;
+    if (headers.has("WARC-Identified-Content-Language")) {
+      addHeaders = new TreeMap<String, String>();
+      addHeaders.put("WARC-Identified-Content-Language", headers.getString("WARC-Identified-Content-Language"));
+    }
+    writeWARCMDRecord(recOut, targetURI, parseWarcDate(capDateString), recId, textExtract, addHeaders);
   }
 
   private static Date parseWarcDate(String capDateString) {
@@ -144,9 +147,9 @@ public class WETExtractorOutput implements ExtractorOutput {
   }
 
   private void writeWARCMDRecord(OutputStream recOut, String targetURI, Date capDate, String recId,
-                                 String textExtract)
+                                 String textExtract, Map<String,String> addHeaders)
       throws IOException {
-    recW.writeTextConversionRecord(recOut, textExtract.getBytes(StandardCharsets.UTF_8), targetURI, capDate, recId);
+    recW.writeTextConversionRecord(recOut, textExtract.getBytes(StandardCharsets.UTF_8), targetURI, capDate, recId, addHeaders);
   }
 
 }

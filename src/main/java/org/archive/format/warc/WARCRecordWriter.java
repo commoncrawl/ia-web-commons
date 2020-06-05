@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
 
 import org.archive.format.http.HttpConstants;
@@ -112,7 +113,8 @@ public class WARCRecordWriter implements WARCConstants, HttpConstants {
                                        byte[] contents,
                                        String targetURI,
                                        Date originalDate,
-                                       String origRecordId) throws IOException
+                                       String origRecordId,
+                                       Map<String,String> addHeaders) throws IOException
   {
     HttpHeaders headers = new HttpHeaders();
     headers.add(HEADER_KEY_TYPE, WARCRecordType.conversion.name());
@@ -121,7 +123,11 @@ public class WARCRecordWriter implements WARCConstants, HttpConstants {
     headers.add(HEADER_KEY_ID, makeRecordId());
     headers.add(HEADER_KEY_REFERS_TO, origRecordId);
     headers.add(HEADER_KEY_BLOCK_DIGEST, contentHash(contents));
-
+    if (addHeaders != null) {
+      for (Map.Entry<String, String> e : addHeaders.entrySet()) {
+        headers.add(e.getKey(), e.getValue());
+      }
+    }
     headers.add(CONTENT_TYPE, "text/plain");
     writeRecord(out, headers, contents);
   }
