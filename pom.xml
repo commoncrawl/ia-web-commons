@@ -70,7 +70,7 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>17.0</version>
+      <version>27.0-jre</version>
     </dependency>
 
     <dependency>
@@ -99,42 +99,8 @@
 
     <dependency>
       <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-core</artifactId>
-      <version>0.20.2-cdh3u4</version>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-httpclient</groupId>
-          <artifactId>commons-httpclient</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>javax.servlet</groupId>
-          <artifactId>servlet-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>javax.servlet.jsp</groupId>
-          <artifactId>jsp-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.mortbay.jetty</groupId>
-          <artifactId>jetty</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.mortbay.jetty</groupId>
-          <artifactId>jetty-util</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>tomcat</groupId>
-          <artifactId>jasper-runtime</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>tomcat</groupId>
-          <artifactId>jasper-compiler</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>hsqldb</groupId>
-          <artifactId>hsqldb</artifactId>
-        </exclusion>
-      </exclusions>
+      <artifactId>hadoop-client</artifactId>
+      <version>3.2.2</version>
     </dependency>
 
     <dependency>
@@ -264,38 +230,5 @@
     </resources>
 
   </build>
-  <repositories>
-    <repository>
-      <id>cloudera</id>
-      <name>Cloudera Hadoop</name>
-      <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
-      <layout>default</layout>
-
-      <releases>
-        <enabled>true</enabled>
-        <updatePolicy>daily</updatePolicy>
-        <checksumPolicy>warn</checksumPolicy>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>daily</updatePolicy>
-        <checksumPolicy>warn</checksumPolicy>
-      </snapshots>
-    </repository>
-
-  </repositories>
-
-<!--
-  <distributionManagement>
-    <repository>
-      <id>${repository.id}</id>
-      <url>${repository.url}</url>
-    </repository>
-    <snapshotRepository>
-      <id>${snapshotRepository.id}</id>
-      <url>${snapshotRepository.url}</url>
-    </snapshotRepository>
-  </distributionManagement>
--->
 
 </project>
