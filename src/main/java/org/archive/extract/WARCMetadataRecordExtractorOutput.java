@@ -131,7 +131,7 @@ public class WARCMetadataRecordExtractorOutput implements ExtractorOutput {
 		return unwrapFirst(warcMetadataRecord.extract(m),"-");
 	}
 	
-	private String unwrapFirst(List<List<String>> l, String defaultValue) {
+	public static String unwrapFirst(List<List<String>> l, String defaultValue) {
 		if(l != null) {
 			if(l.size() > 0) {
 				if(l.get(0) != null) {

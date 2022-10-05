@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.logging.Logger;
 
 import org.archive.format.arc.ARCConstants;
+import org.archive.format.json.SimpleJSONPathSpec;
 import org.archive.format.warc.WARCConstants;
 import org.archive.format.warc.WARCConstants.WARCRecordType;
 import org.archive.resource.MetaData;
@@ -125,9 +126,20 @@ public class ExtractingResourceFactoryMapper implements ResourceFactoryMapper {
 				ARCConstants.URL_KEY, "http");
 	}
 
-	private boolean isHTMLHttpResource(MetaData m) {
-		String type = caseInsensitiveKeyScan(m,HTTP_HEADERS_LIST,
-				"Content-Type");
+	private boolean isHTMLHttpResource(MetaData m, HTTPResponseResource r) {
+		SimpleJSONPathSpec warcIdentifiedPayloadType = new SimpleJSONPathSpec(
+				"Envelope.WARC-Header-Metadata.WARC-Identified-Payload-Type");
+		String type = WARCMetadataRecordExtractorOutput
+				.unwrapFirst(warcIdentifiedPayloadType.extract(m.getTopMetaData()), null);
+		if (type != null) {
+			switch (type) {
+			case "text/html":
+			case "application/xhtml+xml":
+				return true;
+			}
+			return false;
+		}
+		type = caseInsensitiveKeyScan(m, HTTP_HEADERS_LIST, "Content-Type");
 		return type == null ? false : type.toLowerCase().contains("html");
 	}
 
@@ -169,7 +181,6 @@ public class ExtractingResourceFactoryMapper implements ResourceFactoryMapper {
 	}
 	
 	public ResourceFactory mapResourceToFactory(Resource resource) {
-		
 		if(resource instanceof WARCResource) {
 			WARCResource wr = (WARCResource) resource;
 			MetaData envelope = wr.getEnvelopeMetaData();
@@ -208,7 +219,7 @@ public class ExtractingResourceFactoryMapper implements ResourceFactoryMapper {
 			}
 			
 		} else if(resource instanceof HTTPResponseResource) {
-			if(isHTMLHttpResource(resource.getMetaData())) {
+			if(isHTMLHttpResource(resource.getMetaData(), (HTTPResponseResource) resource)) {
 				return htmlF;
 			} else {
 				// TODO: more formats...
