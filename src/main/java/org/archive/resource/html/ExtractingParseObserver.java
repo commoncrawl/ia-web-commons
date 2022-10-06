@@ -198,7 +198,7 @@ public class ExtractingParseObserver implements ParseObserver {
 				if((vals != null) && (vals.size() > 0)) {
 					if(text != null) {
 						// contained an href - we want to ignore <a name="X"></a>:
-						String trimmed = wsPattern.matcher(decodeCharEnt(text.toString(), false).trim()).replaceAll(" ");
+						String trimmed = text.toString().trim();
 						if(trimmed.length() > MAX_TEXT_LEN) {
 							trimmed = trimmed.substring(0,MAX_TEXT_LEN);
 						}
@@ -220,50 +220,99 @@ public class ExtractingParseObserver implements ParseObserver {
 		// this result is thrown away.
 
 		String txt = text.getText();
+		StringBuilder t = new StringBuilder(8192);
 		txt = decodeCharEnt(txt, false);
 		if (inPre) {
-			textExtract.append(txt);
+			t.append(txt);
 		} else {
-			txt = txt.replace('\u00a0', ' ');
-
 			char c = ' ';
+			boolean cIsWhiteSpace = true;
 			if (textExtract.length() > 0) {
 				c = textExtract.charAt(textExtract.length() - 1);
+				cIsWhiteSpace = Character.isWhitespace(c);
 			}
 			for (int i = 0; i < txt.length(); i++) {
 				char c2 = txt.charAt(i);
-				if (c2 == '\r' || c2 == '\n') {
+				switch (c2) {
+				/*
+				 * normalize ASCII control characters, line breaks and some
+				 * Unicode white space for cleaner text and paragraphs
+				 */
+				case '\000':
+				case '\001':
+				case '\002':
+				case '\003':
+				case '\004':
+				case '\005':
+				case '\006':
+				case '\007':
+				case '\010':
+				case '\011':
+				case '\012': // = '\n'
+				case '\013':
+				case '\014':
+				case '\015': // = '\r'
+				case '\016':
+				case '\017':
+				case '\020':
+				case '\021':
+				case '\022':
+				case '\023':
+				case '\024':
+				case '\025':
+				case '\026':
+				case '\027':
+				case '\030':
+				case '\031':
+				case '\032':
+				case '\033':
+				case '\034':
+				case '\035':
+				case '\036':
+				case '\037':
+				case '\177':
+				case '\u00a0': // non-breaking space
 					c2 = ' ';
 				}
-				if (!Character.isWhitespace(c) || !Character.isWhitespace(c2)) {
-					textExtract.append(c2);
+				boolean c2IsWhiteSpace = Character.isWhitespace(c2);
+				if (!cIsWhiteSpace || !c2IsWhiteSpace) {
+					t.append(c2);
 				}
 				c = c2;
+				cIsWhiteSpace = c2IsWhiteSpace;
 			}
 		}
 
-		String t = wsPattern.matcher(txt).replaceAll(" ");
+		textExtract.append(t);
 
-		if(t.length() > MAX_TEXT_LEN) {
-			t = t.substring(0,MAX_TEXT_LEN);
-		}
-		if(inTitle) {
-			title = t;
+		if (inTitle || !openAnchorTexts.isEmpty()) {
 
-		} else {
-			
-			for(StringBuilder s : openAnchorTexts) {
-				if(s.length() >= MAX_TEXT_LEN) {
-					// if we are full, parents enclosing us should be too..
-					break;
+			if (t.length() > MAX_TEXT_LEN) {
+				t.setLength(MAX_TEXT_LEN);
+			}
+
+			if (inTitle) {
+				title = t.toString().trim();
+
+			} else {
+
+				for (StringBuilder s : openAnchorTexts) {
+					if (s.length() >= MAX_TEXT_LEN) {
+						// if we are full, parents enclosing us should be too..
+						break;
+					}
+					String tClipped;
+					if ((s.length() + t.length()) < MAX_TEXT_LEN) {
+						tClipped = t.toString();
+					} else {
+						// only add as much as we can:
+						tClipped = t.substring(0, MAX_TEXT_LEN - s.length());
+					}
+					if (!tClipped.isEmpty() && (s.length() == 0 || s.charAt(s.length() - 1) == ' ') && tClipped.charAt(0) == ' ') {
+						tClipped = tClipped.substring(1);
+					}
+					s.append(tClipped);
 				}
-				if(s.length() + t.length() < MAX_TEXT_LEN) {
-					s.append(t);
-				} else {
-					// only add as much as we can:
-					s.append(t.substring(0,MAX_TEXT_LEN - s.length()));
-				}
-				// BUGBUG: check now for multiple trailing spaces, and strip:
 			}
 		}
 	}
