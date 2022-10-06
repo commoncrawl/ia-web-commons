@@ -340,6 +340,12 @@ public class ExtractingParseObserverTest extends TestCase {
 				assertEquals(content, "Apostrophe's description");
 			}
 		}
+		String[][] exampleLinks = { { "https://example.org/", "A@/href",
+				"Anchor text with white space character entities and HTML block elements" } };
+		resource = extractor.getNext();
+		assertNotNull(resource);
+		System.out.println(resource);
+		checkLinks(resource, exampleLinks);
 	}
 
 	public void testTextExtraction() throws ResourceParseException, IOException {

@@ -52,7 +52,8 @@ public class ExtractingParseObserver implements ParseObserver {
 
 	protected static Pattern wsPattern = Pattern.compile("\\s+");
 
-	private final static int MAX_TEXT_LEN = 100;
+	/** max. length for anchor texts */
+	private final static int MAX_TEXT_LEN = 128;
 
 	private final static String[] BLOCK_ELEMENTS = { "address", "article", "aside", "blockquote", "body", "br",
 			"button", "canvas", "caption", "col", "colgroup", "dd", "div", "dl", "dt", "embed", "fieldset",
@@ -188,6 +189,12 @@ public class ExtractingParseObserver implements ParseObserver {
 		} else if (inlineSpacingElements.contains(name)) {
 			appendSpace(textExtract);
 		}
+		// also add space to open anchor texts
+		if (blockElements.contains(name) || inlineSpacingElements.contains(name)) {
+			for (StringBuilder s : openAnchorTexts) {
+				appendSpace(s);
+			}
+		}
 
 		// Only interesting if it's a </a>:
 		if(name.equals("A")) {
@@ -216,9 +223,6 @@ public class ExtractingParseObserver implements ParseObserver {
 	}
 
 	public void handleTextNode(TextNode text) {
-		// TODO: OPTIMIZ: This can be a lot smarter, if StringBuilders are full,
-		// this result is thrown away.
-
 		String txt = text.getText();
 		StringBuilder t = new StringBuilder(8192);
 		txt = decodeCharEnt(txt, false);
