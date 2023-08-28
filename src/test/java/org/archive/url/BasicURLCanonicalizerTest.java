@@ -33,7 +33,7 @@ public class BasicURLCanonicalizerTest extends TestCase {
 		assertEquals(14,guc.getHex('E'));
 		assertEquals(15,guc.getHex('F'));
 		assertEquals(-1,guc.getHex('G'));
-		assertEquals(-1,guc.getHex('G'));
+		assertEquals(-1,guc.getHex('g'));
 		assertEquals(-1,guc.getHex('q'));
 		assertEquals(-1,guc.getHex(' '));
 	}
