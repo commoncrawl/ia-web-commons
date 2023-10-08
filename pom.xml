@@ -76,7 +76,7 @@
     <dependency>
       <groupId>com.github.openjson</groupId>
       <artifactId>openjson</artifactId>
-      <version>1.0.12</version>
+      <version>1.0.13</version>
     </dependency>
 
     <dependency>
@@ -100,13 +100,13 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-client</artifactId>
-      <version>3.3.4</version>
+      <version>3.3.5</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.pig</groupId>
       <artifactId>pig</artifactId>
-      <version>0.10.0</version>
+      <version>0.17.0</version>
       <scope>provided</scope>
     </dependency>
 
@@ -119,7 +119,7 @@
     <dependency>
       <groupId>org.jsoup</groupId>
       <artifactId>jsoup</artifactId>
-      <version>1.15.3</version>
+      <version>1.16.1</version>
     </dependency>
 
     <dependency>
@@ -136,7 +136,7 @@
     <dependency>
       <groupId>it.unimi.dsi</groupId>
       <artifactId>dsiutils</artifactId>
-      <version>2.7.2</version>
+      <version>2.7.3</version>
       <scope>compile</scope>
       <exclusions>
         <exclusion>
@@ -159,14 +159,15 @@
     </dependency>
 
     <dependency>
-        <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpcore</artifactId>
-        <version>4.4.15</version>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpcore</artifactId>
+      <version>4.4.16</version>
     </dependency>
+
     <dependency>
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
-      <version>2.11.2</version>
+      <version>2.12.5</version>
     </dependency>
   </dependencies>
 
