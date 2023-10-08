@@ -32,8 +32,8 @@ public class ExtractingResourceProducer implements ResourceProducer {
 			if(f == null) {
 				return current;
 			}
-			if(LOG.isLoggable(Level.INFO)) {
-				LOG.info(String.format("Extracting (%s) with (%s)\n", 
+			if(LOG.isLoggable(Level.FINE)) {
+				LOG.fine(String.format("Extracting (%s) with (%s)\n",
 						current.getClass().toString(),
 						f.getClass().toString()));
 			}

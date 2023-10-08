@@ -171,7 +171,7 @@ public class GZIPMemberSeries extends InputStream implements GZIPConstants {
 			throw new IOException("getNextMember() on IOException Stream at "
 					+ currentMemberStartOffset + " in " + streamContext);
 		}
-		LOG.info("getNextMember");
+		LOG.fine("getNextMember");
 
 		if(gotEOF) {
 			LOG.info("getNextMember-ATEOF");
@@ -208,9 +208,9 @@ public class GZIPMemberSeries extends InputStream implements GZIPConstants {
 		while(currentMember == null) {
 			// scan ahead for another record start:
 			long amtSkipped = decoder.alignOnMagic3(this);
-			if(LOG.isLoggable(Level.INFO)) {
+			if(LOG.isLoggable(Level.FINE)) {
 
-				LOG.info("AlignedResult:" + amtSkipped);
+				LOG.fine("AlignedResult:" + amtSkipped);
 			}
 			if(amtSkipped < 0) {
 				gotEOF = true;
@@ -256,7 +256,7 @@ public class GZIPMemberSeries extends InputStream implements GZIPConstants {
 			try {
 				currentMemberStartOffset = offset - 3;
 				header = decoder.parseHeader(this, true);
-				LOG.info("Read next GZip header...");
+				LOG.fine("Read next GZip header...");
 				currentMember = new GZIPSeriesMember(this,header);
 				state = STATE_DEFLATING;
 				
@@ -290,8 +290,8 @@ public class GZIPMemberSeries extends InputStream implements GZIPConstants {
 
 	public int read(byte[] b, int off, int len) throws IOException {
 		int amtWritten = 0;
-		if(LOG.isLoggable(Level.INFO)) {
-			LOG.info("read("+len+" bytes) bufferSize("+bufferSize+")");
+		if(LOG.isLoggable(Level.FINE)) {
+			LOG.fine("read("+len+" bytes) bufferSize("+bufferSize+")");
 		}
 		while(len > 0) {
 			if(bufferSize > 0) {
@@ -340,8 +340,8 @@ public class GZIPMemberSeries extends InputStream implements GZIPConstants {
 		if((bytes > bufferPos) || (bytes < 0)) {
 			throw new IndexOutOfBoundsException();
 		}
-		if(LOG.isLoggable(Level.INFO)) {
-			LOG.info("Returned ("+bytes+")bytes");
+		if(LOG.isLoggable(Level.FINE)) {
+			LOG.fine("Returned ("+bytes+")bytes");
 		}
 		bufferPos -= bytes;
 		bufferSize += bytes;
