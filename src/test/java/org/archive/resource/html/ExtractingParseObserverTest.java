@@ -170,7 +170,7 @@ public class ExtractingParseObserverTest extends TestCase {
 			JSONArray metas = head.optJSONArray("Metas");
 			if (metas != null) {
 				for (int i = 0; i < metas.length(); i++) {
-					JSONObject o = (JSONObject) metas.optJSONObject(i);
+					JSONObject o = metas.optJSONObject(i);
 					String httpEquiv = o.optString("http-equiv");
 					if (httpEquiv != null && httpEquiv.equalsIgnoreCase("Refresh")) {
 						String metaRefreshTarget = o.optString("content");
@@ -195,7 +195,7 @@ public class ExtractingParseObserverTest extends TestCase {
 		}
 		for (JSONArray ldata : linkArrays) {
 			for (int i = 0; i < ldata.length(); i++) {
-				JSONObject o = (JSONObject) ldata.optJSONObject(i);
+				JSONObject o = ldata.optJSONObject(i);
 				try {
 					String url;
 					if (o.has("url")) {
@@ -333,7 +333,7 @@ public class ExtractingParseObserverTest extends TestCase {
 				md.getJSONObject(ResourceConstants.HTML_HEAD).getString(ResourceConstants.HTML_TITLE));
 		JSONArray metas = md.getJSONObject(ResourceConstants.HTML_HEAD).getJSONArray(ResourceConstants.HTML_META_TAGS);
 		for (int i = 0; i < metas.length(); i++) {
-			JSONObject o = (JSONObject) metas.optJSONObject(i);
+			JSONObject o = metas.optJSONObject(i);
 			String property = o.optString("property");
 			if (property.equals("og:description")) {
 				String content = o.optString("content");

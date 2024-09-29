@@ -123,10 +123,12 @@ public class ExtractingParseObserver implements ParseObserver {
 		textExtract = new StringBuilder(8192);
 	}
 	
+	@Override
 	public void handleDocumentStart() {
 		// no-op
 	}
 
+	@Override
 	public void handleDocumentComplete() {
 		if (textExtract.length() > 0) {
 			data.setTextExtract(textExtract.toString());
@@ -134,10 +136,12 @@ public class ExtractingParseObserver implements ParseObserver {
 		}
 	}
 
+	@Override
 	public void handleTagEmpty(TagNode tag) {
 		handleTagOpen(tag);
 	}
 		
+	@Override
 	public void handleTagOpen(TagNode tag) {
 		String name = tag.getTagName();
 		if(name.equals("TITLE")) {
@@ -175,6 +179,7 @@ public class ExtractingParseObserver implements ParseObserver {
 		}
 	}
 
+	@Override
 	public void handleTagClose(TagNode tag) {
 		String name = tag.getTagName();
 
@@ -222,6 +227,7 @@ public class ExtractingParseObserver implements ParseObserver {
 		}
 	}
 
+	@Override
 	public void handleTextNode(TextNode text) {
 		String txt = text.getText();
 		StringBuilder t = new StringBuilder(8192);
@@ -321,16 +327,19 @@ public class ExtractingParseObserver implements ParseObserver {
 		}
 	}
 
+	@Override
 	public void handleScriptNode(TextNode text) {
 		// TODO: Find (semi) obvious URLs in JS:
 	}
 
+	@Override
 	public void handleStyleNode(TextNode text) {
 		String cssStr = decodeCharEnt(text.getText());
 		patternCSSExtract(data, cssUrlPattern, cssStr);
 		patternCSSExtract(data, cssImportNoUrlPattern, cssStr);
 	}
 
+	@Override
 	public void handleRemarkNode(RemarkNode remark) {
 		// TODO no-op, right??
 	}
@@ -416,7 +425,6 @@ public class ExtractingParseObserver implements ParseObserver {
 			for (Pattern pattern : jsOnClickUrlPatterns) {
 				String url = patternJSExtract(pattern, onclick);
 				if (url != null) {
-					// TODO: translate?
 					data.addHref(PATH, path, "url", url);
 				}
 			}
@@ -451,6 +459,7 @@ public class ExtractingParseObserver implements ParseObserver {
 	}
 
 	private static class AnchorTagExtractor implements TagExtractor {
+		@Override
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			ArrayList<String> l = new ArrayList<String>();
 			String url = node.getAttribute("href");
@@ -482,12 +491,14 @@ public class ExtractingParseObserver implements ParseObserver {
 	}
 
 	private static class AppletTagExtractor implements TagExtractor {
+		@Override
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			addBasicHrefs(data,node,"codebase","cdata");
 		}
 	}
 
 	private static class AreaTagExtractor implements TagExtractor {
+		@Override
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			String url = node.getAttribute("href");
 			if(url != null) {
@@ -510,6 +521,7 @@ public class ExtractingParseObserver implements ParseObserver {
 	}
 
 	private static class BaseTagExtractor implements TagExtractor {
+		@Override
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			String url = node.getAttribute("href");
 			if(url != null) {
@@ -520,30 +532,35 @@ public class ExtractingParseObserver implements ParseObserver {
 	}
 	
 	private static class ButtonTagExtractor implements TagExtractor {
+		@Override
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			addBasicHrefs(data,node,"formaction");
 		}
 	}
 
 	private static class DivTagExtractor implements TagExtractor {
+		@Override
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			addHrefsOnclick(data,node);
 		}
 	}
 
 	private static class EmbedTagExtractor implements TagExtractor {
+		@Override
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			addBasicHrefs(data,node,"src");
 		}
 	}
 	
 	private static class EmbedVideoTagExtractor implements TagExtractor {
+		@Override
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			addBasicHrefs(data,node,"src","poster");
 		}
 	}
 
 	private static class FormTagExtractor implements TagExtractor {
+		@Override
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			ArrayList<String> l = new ArrayList<String>();
 			String url = node.getAttribute("action");
@@ -567,18 +584,21 @@ public class ExtractingParseObserver implements ParseObserver {
 	}
 
 	private static class FrameTagExtractor implements TagExtractor {
+		@Override
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			addBasicHrefs(data,node,"src");
 		}
 	}
 
 	private static class IFrameTagExtractor implements TagExtractor {
+		@Override
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			addBasicHrefs(data,node,"src");
 		}
 	}
 
 	private static class ImgTagExtractor implements TagExtractor {
+		@Override
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			addHrefWithAttrs(data,node,"src","alt","title");
 			addBasicHrefs(data,node,"longdesc");
@@ -586,6 +606,7 @@ public class ExtractingParseObserver implements ParseObserver {
 	}
 
 	private static class InputTagExtractor implements TagExtractor {
+		@Override
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			addBasicHrefs(data,node,"src","formaction");
 			addHrefsOnclick(data,node);
@@ -593,6 +614,7 @@ public class ExtractingParseObserver implements ParseObserver {
 	}
 
 	private static class LinkTagExtractor implements TagExtractor {
+		@Override
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			ArrayList<String> l = getAttrListUrl(node,"href","rel","type");
 			if(l != null) {
@@ -602,12 +624,14 @@ public class ExtractingParseObserver implements ParseObserver {
 	}
 
 	private static class MenuitemTagExtractor implements TagExtractor {
+		@Override
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			addBasicHrefs(data,node,"icon");
 		}
 	}
 
 	private static class MetaTagExtractor implements TagExtractor {
+		@Override
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			ArrayList<String> l = getAttrList(node,"name","rel","content","http-equiv","property");
 			if(l != null) {
@@ -617,18 +641,21 @@ public class ExtractingParseObserver implements ParseObserver {
 	}
 
 	private static class ObjectTagExtractor implements TagExtractor {
+		@Override
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			addBasicHrefs(data,node,"codebase","cdata","data");
 		}
 	}
 
 	private static class QuotationLinkTagExtractor implements TagExtractor {
+		@Override
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			addBasicHrefs(data,node,"cite");
 		}
 	}
 
 	private static class ScriptTagExtractor implements TagExtractor {
+		@Override
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			ArrayList<String> l = getAttrListUrl(node,"src","type");
 			if(l != null) {
