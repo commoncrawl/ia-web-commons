@@ -31,9 +31,15 @@ public class HTMLMetaData extends MetaData implements ResourceConstants {
 	public void setBaseHref(String href) {
 		putUnlessNull(getHeader(),HTML_BASE, href);
 	}
+
 	public void setTitle(String title) {
 		putUnlessNull(getHeader(),HTML_TITLE, title);
 	}
+
+	public boolean hasTitle() {
+		return header != null && header.has(HTML_TITLE);
+	}
+
 	private void putUnlessNull(JSONObject o, String k, String v) {
 		if(o != null) {
 			try {
@@ -43,6 +49,7 @@ public class HTMLMetaData extends MetaData implements ResourceConstants {
 			}
 		}
 	}
+
 	public String[] LtoA(List<String> l) {
 		String[] a = new String[l.size()];
 		l.toArray(a);
