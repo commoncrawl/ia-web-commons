@@ -152,6 +152,19 @@ public class ExtractingParseObserverTest extends TestCase {
 		assertTrue("Wrong anchor text " + anchor + " for " + url, anchors.get(url).contains(anchor));
 	}
 
+	private void checkTitle(Resource resource, String title) {
+		assertNotNull(resource);
+		assertTrue("Wrong instance type of Resource: " + resource.getClass(), resource instanceof HTMLResource);
+		JSONObject head = resource.getMetaData().optJSONObject("Head");
+		if (title != null) {
+			assertNotNull(head);
+			assertTrue("No title found", head.has(ResourceConstants.HTML_TITLE));
+			assertEquals(title, head.get(ResourceConstants.HTML_TITLE));
+		} else {
+			assertFalse(head.has(ResourceConstants.HTML_TITLE));
+		}
+	}
+
 	private void checkLinks(Resource resource, String[][] expectedLinks) {
 		assertNotNull(resource);
 		assertTrue("Wrong instance type of Resource: " + resource.getClass(), resource instanceof HTMLResource);
@@ -247,7 +260,9 @@ public class ExtractingParseObserverTest extends TestCase {
 				{"http://www.example.com/shakespeare.html", "Q@/cite"},
 				{"http://www.example.com/shakespeare-long.html", "BLOCKQUOTE@/cite"}
 		};
-		checkLinks(extractor.getNext(), html4links);
+		Resource resource = extractor.getNext();
+		checkTitle(resource, "Test XHTML Link Extraction");
+		checkLinks(resource, html4links);
 		String[][] html5links = {
 				{"http:///www.example.com/video.html", "LINK@/href", null, "canonical"},
 				{"video.rss", "LINK@/href", null, "alternate"},
@@ -256,18 +271,24 @@ public class ExtractingParseObserverTest extends TestCase {
 				{"https://archive.org/download/WebmVp8Vorbis/webmvp8_512kb.mp4", "SOURCE@/src"},
 				{"https://archive.org/download/WebmVp8Vorbis/webmvp8.ogv", "SOURCE@/src"}
 		};
-		checkLinks(extractor.getNext(), html5links);
+		resource = extractor.getNext();
+		checkTitle(resource, "Test HTML5 Video Tag");
+		checkLinks(resource, html5links);
 		String[][] html5links2 = {
 				{"http://www.example.com/", "A@/href"},
 		};
-		checkLinks(extractor.getNext(), html5links2);
+		resource = extractor.getNext();
+		checkTitle(resource, "Testing poor HTML5");
+		checkLinks(resource, html5links2);
 		String[][] fbVideoLinks = {
 				{"https://www.facebook.com/facebook/videos/10153231379946729/", "BLOCKQUOTE@/cite"},
 				{"https://www.facebook.com/facebook/videos/10153231379946729/", "A@/href"},
 				{"https://www.facebook.com/facebook/", "A@/href"},
 				{"https://www.facebook.com/facebook/videos/10153231379946729/", "DIV@/data-href"}
 		};
-		checkLinks(extractor.getNext(), fbVideoLinks);
+		resource = extractor.getNext();
+		checkTitle(resource, "fb-video - Embedded Videos - Social Plugins");
+		checkLinks(resource, fbVideoLinks);
 		String[][] dataHrefLinks = {
 				{"standard.css", "LINK@/href", null, "stylesheet"},
 				{"https://www.facebook.com/elegantthemes/videos/10153760379211923/", "DIV@/data-href"},
@@ -293,7 +314,9 @@ public class ExtractingParseObserverTest extends TestCase {
 				{"#", "A@/href"},
 				{"http://www.youtube.com/v/itTskyFLSS8&rel=0&autohide=1&showinfo=0", "IFRAME@/src"}
 		};
-		checkLinks(extractor.getNext(), dataHrefLinks);
+		resource = extractor.getNext();
+		checkTitle(resource, null); // empty title!
+		checkLinks(resource, dataHrefLinks);
 		String[][] fbSocialLinks = {
 				{"http://www.your-domain.com/your-page.html", "DIV@/data-uri"},
 				{"https://developers.facebook.com/docs/plugins/comments#configurator", "DIV@/data-href"},
@@ -305,7 +328,9 @@ public class ExtractingParseObserverTest extends TestCase {
 				{"https://www.facebook.com/facebook", "A@/href"},
 				{"http://www.your-domain.com/your-page.html", "DIV@/data-href"}
 		};
-		checkLinks(extractor.getNext(), fbSocialLinks);
+		resource = extractor.getNext();
+		// fragment without head and no title
+		checkLinks(resource, fbSocialLinks);
 		String[][] onClickLinks = {
 				{"webpage.html", "DIV@/onclick"},
 				{"index.html", "INPUT@/onclick"},
@@ -315,7 +340,9 @@ public class ExtractingParseObserverTest extends TestCase {
 				{"http://example.com/location/href/1.html", "INPUT@/onclick"},
 				{"http://example.com/location/href/2.html", "INPUT@/onclick"}
 		};
-		checkLinks(extractor.getNext(), onClickLinks);
+		resource = extractor.getNext();
+		checkTitle(resource, "Test Extraction of URLs from INPUT onClick Attributes");
+		checkLinks(resource, onClickLinks);
 		String[][] escapedEntitiesLinks = {
 				{"http://www.example.com/", "__base__"},
 				{"http://www.example.com/redirected.html", "__meta_refresh__"},
@@ -325,12 +352,11 @@ public class ExtractingParseObserverTest extends TestCase {
 				{"https://img.example.org/view?id=867&res=10x16", "IMG@/src",
 					"image URL containing escaped ampersand (\"&amp;\")" }
 		};
-		Resource resource = extractor.getNext();
+		resource = extractor.getNext();
 		assertNotNull(resource);
+		checkTitle(resource, "Title – \"Title\" written using character entities");
 		checkLinks(resource, escapedEntitiesLinks);
 		MetaData md = resource.getMetaData();
-		assertEquals("Wrong title", "Title – \"Title\" written using character entities",
-				md.getJSONObject(ResourceConstants.HTML_HEAD).getString(ResourceConstants.HTML_TITLE));
 		JSONArray metas = md.getJSONObject(ResourceConstants.HTML_HEAD).getJSONArray(ResourceConstants.HTML_META_TAGS);
 		for (int i = 0; i < metas.length(); i++) {
 			JSONObject o = metas.optJSONObject(i);
@@ -344,7 +370,7 @@ public class ExtractingParseObserverTest extends TestCase {
 				"Anchor text with white space character entities and HTML block elements" } };
 		resource = extractor.getNext();
 		assertNotNull(resource);
-		System.out.println(resource);
+		checkTitle(resource, "Test Anchor Text Extraction With Whitespace");
 		checkLinks(resource, exampleLinks);
 	}
 
@@ -357,6 +383,7 @@ public class ExtractingParseObserverTest extends TestCase {
 		Resource resource = extractor.getNext();
 		assertNotNull(resource);
 		assertTrue("Wrong instance type of Resource: " + resource.getClass(), resource instanceof HTMLResource);
+		checkTitle(resource, "White space and paragraph breaks when converting HTML to text");
 		String text = resource.getMetaData().getString(ResourceConstants.HTML_TEXT);
 		System.out.println(text);
 		assertTrue(text.contains("text\nThere should be a paragraph break after <h1-h6>"));
@@ -375,6 +402,16 @@ public class ExtractingParseObserverTest extends TestCase {
 		assertTrue(text.contains("first line\nsecond line\n<entity>"));
 		// TODO: CDATA in mathml not correctly parsed
 		// assertTrue(text.matches("CDATA in MathML:\\W*x<y"));
+	}
+
+	public void testTitleExtraction() throws ResourceParseException, IOException {
+		String testFileName = "title-extraction-embedded-SVG.warc";
+		ResourceProducer producer = ProducerUtils.getProducer(getClass().getResource(testFileName).getPath());
+		ResourceFactoryMapper mapper = new ExtractingResourceFactoryMapper();
+		ExtractingResourceProducer extractor = 
+				new ExtractingResourceProducer(producer, mapper);
+		Resource resource = extractor.getNext();
+		checkTitle(resource, "Testing title extraction with embedded SVG");
 	}
 
 	public void testHtmlParserEntityDecoding() {

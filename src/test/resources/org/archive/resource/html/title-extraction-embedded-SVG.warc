@@ -1,0 +1,45 @@
+WARC/1.0
+WARC-Type: response
+WARC-Record-ID: <urn:uuid:9043ba74-5d11-4dad-97c1-d7454f8b7358>
+WARC-Target-URI: https://www.example.org/testEmbeddedSVG.html
+WARC-Date: 2024-10-14T10:05:41Z
+WARC-IP-Address: 127.0.0.1
+WARC-Block-Digest: sha1:XNN4JA3QDUN4DDEGTIPH5ZRORHYL657F
+WARC-Payload-Digest: sha1:4FUACFTG3WCL26OITZNMEPRKFP6WAAHN
+Content-Type: application/http;msgtype=response
+Content-Length: 856
+
+HTTP/1.1 200 OK
+Date: Mon, 14 Oct 2024 10:05:41 GMT
+Server: Apache/2.4.58 (Ubuntu)
+Upgrade: h2,h2c
+Connection: Upgrade, Keep-Alive
+Last-Modified: Mon, 14 Oct 2024 10:04:25 GMT
+ETag: "20a-6246cf6287f50"
+Accept-Ranges: bytes
+Content-Length: 522
+Vary: Accept-Encoding
+Keep-Alive: timeout=5, max=100
+Content-Type: text/html
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Testing title extraction with embedded SVG</title>
+<meta charset="utf-8">
+</head>
+<body>
+  <div>
+    <header>Testing title extraction with embedded SVG</header>
+    <p>This is body text...</p>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="currentColor" width="1em">
+      <title>Embedded SVG</title>
+      <rect x="0" y="0" width="100%" height="100%" fill="lightblue"/>
+      <circle cx="100" cy="100" r="50" fill="red"/>
+    </svg>
+  </div>
+</body>
+</html>
+
+
+
