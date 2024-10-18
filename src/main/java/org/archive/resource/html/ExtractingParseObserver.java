@@ -24,8 +24,10 @@ public class ExtractingParseObserver implements ParseObserver {
 	Stack<StringBuilder> openAnchorTexts;
 	StringBuilder textExtract;
 	String title = null;
+	boolean inHead = false;
 	boolean inTitle = false;
 	boolean inPre = false;
+	boolean inSVG = false;
 
 	protected static String cssUrlPatString = 
 		"url\\s*\\(\\s*([^)\\s]{1,8000}?)\\s*\\)";
@@ -59,7 +61,7 @@ public class ExtractingParseObserver implements ParseObserver {
 			"button", "canvas", "caption", "col", "colgroup", "dd", "div", "dl", "dt", "embed", "fieldset",
 			"figcaption", "figure", "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "header", "hgroup", "hr",
 			"li", "map", "noscript", "object", "ol", "output", "p", "pre", "progress", "section", "table", "tbody",
-			"textarea", "tfoot", "th", "thead", "tr", "ul", "video" };
+			"textarea", "tfoot", "th", "thead", "title", "tr", "ul", "video" };
 	private static final Set<String> blockElements;
 	/* inline elements which content is not melted with surrounding words */
 	private final static String[] INLINE_ELEMENTS_SPACING = { "address", "cite", "details", "datalist", "iframe", "img",
@@ -144,11 +146,17 @@ public class ExtractingParseObserver implements ParseObserver {
 	@Override
 	public void handleTagOpen(TagNode tag) {
 		String name = tag.getTagName();
-		if(name.equals("TITLE")) {
+		if (name.equals("HEAD")) {
+			inHead = true;
+		} else if (name.equals("TITLE")) {
 			inTitle = !tag.isEmptyXmlTag();
 			return;
 		} else if (name.equals("PRE")) {
 			inPre = true;
+		} else if (name.equals("SVG")) {
+			inSVG = true;
+		} else if (name.equals("BODY")) {
+			inHead = false;
 		}
 
 		if (blockElements.contains(name)) {
@@ -183,9 +191,11 @@ public class ExtractingParseObserver implements ParseObserver {
 	public void handleTagClose(TagNode tag) {
 		String name = tag.getTagName();
 
-		if(inTitle) {
+		if (inTitle) {
 			inTitle = false;
-			data.setTitle(title);
+			if (!inSVG && (inHead || !data.hasTitle())) {
+				data.setTitle(title);
+			}
 			title = null;
 		}
 
@@ -222,8 +232,12 @@ public class ExtractingParseObserver implements ParseObserver {
 					data.addHref(vals);
 				}
 			}
+		} else if (tag.getTagName().equals("HEAD")) {
+			inHead = false;
 		} else if (tag.getTagName().equals("PRE")) {
 			inPre = false;
+		} else if (tag.getTagName().equals("SVG")) {
+			inSVG = false;
 		}
 	}
 
