@@ -86,7 +86,7 @@ import org.archive.util.MimetypeUtils;
  * write our own GZIP*Streams, ones that resettable and consious of gzip
  * members.
  *
- * <p>This class will write until we hit >= maxSize.  The check is done at
+ * <p>This class will write until we hit &gt;= maxSize.  The check is done at
  * record boundary.  Records do not span ARC files.  We will then close current
  * file and open another and then continue writing.
  *
@@ -95,9 +95,9 @@ import org.archive.util.MimetypeUtils;
  * <a href="http://www.archive.org/web/researcher/tool_documentation.php">alexa
  * ARC c-tools</a>:
  * <pre>
- * % av_procarc hx20040109230030-0.arc.gz | av_ziparc > \
+ * % av_procarc hx20040109230030-0.arc.gz | av_ziparc &gt; \
  *     /tmp/hx20040109230030-0.dat.gz
- * % av_ripdat /tmp/hx20040109230030-0.dat.gz > /tmp/hx20040109230030-0.cdx
+ * % av_ripdat /tmp/hx20040109230030-0.dat.gz &gt; /tmp/hx20040109230030-0.cdx
  * </pre>
  * Examine the produced cdx file to make sure it makes sense.  Search
  * for 'no-type 0'.  If found, then we're opening a gzip record w/o data to
@@ -129,12 +129,7 @@ public class ARCWriter extends WriterPoolMember implements ARCConstants, Closeab
      * @param serialNo  used to generate unique file name sequences
      * @param out Where to write.
      * @param arc File the <code>out</code> is connected to.
-     * @param cmprs Compress the content written.
-     * @param metadata File meta data.  Can be null.  Is list of File and/or
-     * String objects.
-     * @param a14DigitDate If null, we'll write current time.
-     * @throws IOException
-     */
+2     */
     public ARCWriter(final AtomicInteger serialNo, final PrintStream out,
     	final File arc, final WriterPoolSettings settings)
     throws IOException {
