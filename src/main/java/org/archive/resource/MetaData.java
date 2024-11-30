@@ -157,19 +157,7 @@ public class MetaData extends JSONObject {
 
 	@Override
 	public JSONObject put(String key, Object value) {
-		if (value instanceof JSONArray) {
-			super.remove(key);
-			super.put(key, value);
-		} else if (has(key)) {
-			if (super.get(key) instanceof JSONArray) {
-				((JSONArray) super.get(key)).put(value);
-				return this;
-			} else {
-				JSONArray array = new JSONArray();
-				array.put(super.get(key));
-				array.put(value);
-				super.put(key, array);
-			}
+		if (has(key)) {
 			return super.accumulate(key, value);
 		}
 		return super.put(key, value);

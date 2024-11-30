@@ -7,8 +7,9 @@ import org.archive.extract.ExtractingResourceProducer;
 import org.archive.extract.ProducerUtils;
 import org.archive.extract.ResourceFactoryMapper;
 import org.archive.format.json.JSONUtils;
-import org.json.JSONArray;
-import org.json.JSONObject;
+
+import com.github.openjson.JSONArray;
+import com.github.openjson.JSONObject;
 
 import junit.framework.TestCase;
 
@@ -73,8 +74,7 @@ public class MetaDataTest extends TestCase {
 		assertEquals(1.5d, ((JSONArray) m.get("double-1")).getDouble(1));
 		assertEquals(2.5d, m.getDouble("double-2"));
 		assertEquals(3.5d, m.getDouble("double-3"));
-		// could be Double or BigDecimal, depending on the Java version
-		// assertEquals(Double.class, m.get("double-3").getClass());
+		assertEquals(Double.class, m.get("double-3").getClass());
 		assertEquals(3.5d, m.optDouble("double-3"));
 		assertEquals(99.5d, m.optDouble("double-99", 99.5d));
 
