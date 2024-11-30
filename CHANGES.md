@@ -1,7 +1,32 @@
+1.2.0
+-----
+
+#### New features
+
+* MetaData is now multivalued to support repeated WARC and HTTP headers. [#98](https://github.com/iipc/webarchive-commons/pull/98/files)
+
+#### Dependency upgrades
+
+* commons-io 2.18.0
+* commons-lang 2.6
+* guava 33.3.1-jre
+* hadoop 3.4.1
+* htmlparser 2.1
+* httpcore 4.4.16
+* json 20240303
+* junit 4.13.2
+
+1.1.11
+------
+
+#### Bug fixes
+
+* Fixed URLParser and WaybackURLKeyMaker failing on URLs with IPv6 address hostnames [#100](https://github.com/iipc/webarchive-commons/pull/100)
+
 1.1.10
 ------
 
-#### Fixes
+#### Bug fixes
 
 * [WAT extractor: do not fail on missing WARC-Filename in warcinfo record](https://github.com/iipc/webarchive-commons/pull/89)
 * [ExtractingParseObserver: extract rel, hreflang and type attributes](https://github.com/iipc/webarchive-commons/pull/86)

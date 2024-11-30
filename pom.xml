@@ -1,19 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>org.sonatype.oss</groupId>
-    <artifactId>oss-parent</artifactId>
-    <version>7</version>
-  </parent>
-
   <groupId>org.commoncrawl</groupId>
   <artifactId>ia-web-commons</artifactId>
-  <version>1.1.11-SNAPSHOT</version>
+  <version>1.2.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>ia-web-commons</name>
   <url>https://github.com/commoncrawl/ia-web-commons</url>
+  <description>Common web archive utility code</description>
 
    <organization>
       <name>The International Internet Preservation Consortium</name>
@@ -45,19 +40,14 @@
    <scm>
       <connection>scm:git:git@github.com:iipc/webarchive-commons.git</connection>
       <developerConnection>scm:git:git@github.com:iipc/webarchive-commons.git</developerConnection>
-      <url>git@github.com:iipc/webarchive-commons.git</url>
-   </scm>
+      <url>https://github.com/iipc/webarchive-commons</url>
+     <tag>HEAD</tag>
+  </scm>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <build.time>${maven.build.timestamp}</build.time>
     <maven.build.timestamp.format>yyyyMMddhhmmss</maven.build.timestamp.format>
-    <build.tag />
-    <!-- sonatype repositories are defaults for distributionManagement -->
-    <repository.id>sonatype-nexus-staging</repository.id>
-    <repository.url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</repository.url>
-    <snapshotRepository.id>sonatype-nexus-snapshots</snapshotRepository.id>
-    <snapshotRepository.url>https://oss.sonatype.org/content/repositories/snapshots/</snapshotRepository.url>
   </properties>
 
   <dependencies>
@@ -70,7 +60,7 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>33.3.0-jre</version>
+      <version>33.3.1-jre</version>
     </dependency>
 
     <dependency>
@@ -187,24 +177,6 @@
           <source>8</source>
           <target>8</target>
         </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.4</version>
-        <configuration>
-          <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
-          <finalName>webarchive-commons</finalName>
-        </configuration>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
