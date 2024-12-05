@@ -669,6 +669,24 @@ public class ExtractingParseObserver implements ParseObserver {
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			ArrayList<String> l = getAttrList(node,"name","rel","content","http-equiv","property");
 			if(l != null) {
+				if (l.size() == 2) {
+					if (l.get(0).equals("content")) {
+						/*
+						 * drop single "content" attributes very likely stemming
+						 * from <meta itemprop="..." content="..."> schema.org
+						 * annotations embedded in the HTML body, see
+						 * https://github.com/commoncrawl/ia-web-commons/issues/40
+						 */
+						return;
+					} else {
+						/*
+						 * Single key-value metadata pair, e.g. <meta
+						 * name="..."/> (no "content") - no value or something
+						 * when wrong with attribute parsing.
+						 */
+						return;
+					}
+				}
 				data.addMeta(l);
 			}
 		}
