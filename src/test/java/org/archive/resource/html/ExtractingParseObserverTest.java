@@ -241,16 +241,17 @@ public class ExtractingParseObserverTest extends TestCase {
 		}
 	}
 
-	private void checkExtractHtmlLangAttribute(Resource resource, Map<String, String> langAttributes)
+	private void checkExtractHtmlLangAttribute(Resource resource, String... langAttributes)
 			throws JSONException {
 		assertNotNull(resource);
 		assertTrue("Wrong instance type of Resource: " + resource.getClass(), resource instanceof HTMLResource);
 		JSONArray metas = resource.getMetaData().getJSONObject("Head").getJSONArray("Metas");
 		assertNotNull(metas);
 		JSONObject meta = metas.getJSONObject(0);
-		for (String key : langAttributes.keySet()) {
+		for (int i = 0; i < langAttributes.length; i += 2) {
+			String key = langAttributes[i];
 			assertNotNull(meta.get(key));
-			assertEquals(meta.get(key), langAttributes.get(key));
+			assertEquals(meta.get(key), langAttributes[i+1]);
 		}
 	}
 
@@ -433,11 +434,11 @@ public class ExtractingParseObserverTest extends TestCase {
 		ResourceProducer producer = ProducerUtils.getProducer(getClass().getResource(testFileName).getPath());
 		ResourceFactoryMapper mapper = new ExtractingResourceFactoryMapper();
 		ExtractingResourceProducer extractor = new ExtractingResourceProducer(producer, mapper);
-		checkExtractHtmlLangAttribute(extractor.getNext(), Map.of("name", "HTML@/lang", "content", "en"));
-		checkExtractHtmlLangAttribute(extractor.getNext(), Map.of("name", "HTML@/lang", "content", "zh-CN"));
-		checkExtractHtmlLangAttribute(extractor.getNext(), Map.of("name", "HTML@/lang", "content", "cs-cz"));
-		checkExtractHtmlLangAttribute(extractor.getNext(), Map.of("name", "HTML@/lang", "content", "en"));
-		checkExtractHtmlLangAttribute(extractor.getNext(), Map.of("name", "HTML@/xml:lang", "content", "es-MX"));
+		checkExtractHtmlLangAttribute(extractor.getNext(), "name", "HTML@/lang", "content", "en");
+		checkExtractHtmlLangAttribute(extractor.getNext(), "name", "HTML@/lang", "content", "zh-CN");
+		checkExtractHtmlLangAttribute(extractor.getNext(), "name", "HTML@/lang", "content", "cs-cz");
+		checkExtractHtmlLangAttribute(extractor.getNext(), "name", "HTML@/lang", "content", "en");
+		checkExtractHtmlLangAttribute(extractor.getNext(), "name", "HTML@/xml:lang", "content", "es-MX");
 	}
 
 	public void testHtmlParserEntityDecoding() {
