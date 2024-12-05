@@ -3,6 +3,7 @@ package org.archive.resource.html;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.archive.extract.ExtractingResourceFactoryMapper;
@@ -240,6 +241,19 @@ public class ExtractingParseObserverTest extends TestCase {
 		}
 	}
 
+	private void checkExtractHtmlLangAttribute(Resource resource, Map<String, String> langAttributes)
+			throws JSONException {
+		assertNotNull(resource);
+		assertTrue("Wrong instance type of Resource: " + resource.getClass(), resource instanceof HTMLResource);
+		JSONArray metas = resource.getMetaData().getJSONObject("Head").getJSONArray("Metas");
+		assertNotNull(metas);
+		JSONObject meta = metas.getJSONObject(0);
+		for (String key : langAttributes.keySet()) {
+			assertNotNull(meta.get(key));
+			assertEquals(meta.get(key), langAttributes.get(key));
+		}
+	}
+
 	public void testLinkExtraction() throws ResourceParseException, IOException {
 		String testFileName = "link-extraction-test.warc";
 		ResourceProducer producer = ProducerUtils.getProducer(getClass().getResource(testFileName).getPath());
@@ -412,6 +426,18 @@ public class ExtractingParseObserverTest extends TestCase {
 				new ExtractingResourceProducer(producer, mapper);
 		Resource resource = extractor.getNext();
 		checkTitle(resource, "Testing title extraction with embedded SVG");
+	}
+
+	public void testHtmlLanguageAttributeExtraction() throws ResourceParseException, IOException {
+		String testFileName = "html-lang-attribute.warc";
+		ResourceProducer producer = ProducerUtils.getProducer(getClass().getResource(testFileName).getPath());
+		ResourceFactoryMapper mapper = new ExtractingResourceFactoryMapper();
+		ExtractingResourceProducer extractor = new ExtractingResourceProducer(producer, mapper);
+		checkExtractHtmlLangAttribute(extractor.getNext(), Map.of("name", "HTML@/lang", "content", "en"));
+		checkExtractHtmlLangAttribute(extractor.getNext(), Map.of("name", "HTML@/lang", "content", "zh-CN"));
+		checkExtractHtmlLangAttribute(extractor.getNext(), Map.of("name", "HTML@/lang", "content", "cs-cz"));
+		checkExtractHtmlLangAttribute(extractor.getNext(), Map.of("name", "HTML@/lang", "content", "en"));
+		checkExtractHtmlLangAttribute(extractor.getNext(), Map.of("name", "HTML@/xml:lang", "content", "es-MX"));
 	}
 
 	public void testHtmlParserEntityDecoding() {
