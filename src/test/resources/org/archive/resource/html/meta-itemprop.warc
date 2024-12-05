@@ -1,0 +1,35 @@
+WARC/1.0
+WARC-Type: response
+WARC-Date: 2024-12-05T10:47:02Z
+Content-Length: 710
+Content-Type: application/http; msgtype=response
+WARC-Target-URI: https://www.example.org/
+WARC-Identified-Payload-Type: text/html
+
+HTTP/1.1 200 
+content-type: text/html; charset=UTF-8
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name=robots content="index,follow">
+	<title>Test</title>
+</head>
+<body>
+<!-- from https://schema.org/docs/gs.html#advanced_missing -->
+<div itemscope itemtype="https://schema.org/Offer">
+  <span itemprop="name">Blend-O-Matic</span>
+  <span itemprop="price">$19.95</span>
+  <div itemprop="reviews" itemscope itemtype="https://schema.org/AggregateRating">
+    <img src="four-stars.jpg" />
+    <meta itemprop="ratingValue" content="4" />
+    <meta itemprop="bestRating" content="5" />
+    Based on <span itemprop="ratingCount">25</span> user ratings
+  </div>
+</div>
+</body>
+</html>
+
+
+

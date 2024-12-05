@@ -165,6 +165,20 @@ public class ExtractingParseObserverTest extends TestCase {
 		}
 	}
 
+	private void checkExtractedAttributes(Resource resource, String... attributes) throws JSONException {
+		assertNotNull(resource);
+		assertTrue("Wrong instance type of Resource: " + resource.getClass(), resource instanceof HTMLResource);
+		JSONArray metas = resource.getMetaData().getJSONObject("Head").getJSONArray("Metas");
+		assertNotNull(metas);
+		JSONObject meta = metas.getJSONObject(0);
+		assertEquals(attributes.length / 2, meta.length());
+		for (int i = 0; i < attributes.length; i += 2) {
+			String key = attributes[i];
+			assertNotNull(meta.get(key));
+			assertEquals(meta.get(key), attributes[i + 1]);
+		}
+	}
+
 	private void checkLinks(Resource resource, String[][] expectedLinks) {
 		assertNotNull(resource);
 		assertTrue("Wrong instance type of Resource: " + resource.getClass(), resource instanceof HTMLResource);
@@ -412,6 +426,14 @@ public class ExtractingParseObserverTest extends TestCase {
 				new ExtractingResourceProducer(producer, mapper);
 		Resource resource = extractor.getNext();
 		checkTitle(resource, "Testing title extraction with embedded SVG");
+	}
+
+	public void testBodyMetaElements() throws ResourceParseException, IOException {
+		String testFileName = "meta-itemprop.warc";
+		ResourceProducer producer = ProducerUtils.getProducer(getClass().getResource(testFileName).getPath());
+		ResourceFactoryMapper mapper = new ExtractingResourceFactoryMapper();
+		ExtractingResourceProducer extractor = new ExtractingResourceProducer(producer, mapper);
+		checkExtractedAttributes(extractor.getNext(), "name", "robots", "content", "index,follow");
 	}
 
 	public void testHtmlParserEntityDecoding() {
