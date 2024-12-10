@@ -166,6 +166,24 @@ public class ExtractingParseObserverTest extends TestCase {
 		}
 	}
 
+	private void checkExtractedAttributes(Resource resource, int metaElements, int metaElementIndex,
+			String... attributes) throws JSONException {
+		assertNotNull(resource);
+		assertTrue("Wrong instance type of Resource: " + resource.getClass(), resource instanceof HTMLResource);
+		JSONArray metas = resource.getMetaData().getJSONObject("Head").getJSONArray("Metas");
+		assertNotNull(metas);
+		if (metaElements > -1) {
+			assertEquals(metaElements, metas.length());
+		}
+		JSONObject meta = metas.getJSONObject(metaElementIndex);
+		assertEquals(attributes.length / 2, meta.length());
+		for (int i = 0; i < attributes.length; i += 2) {
+			String key = attributes[i];
+			assertNotNull(meta.get(key));
+			assertEquals(attributes[i + 1], meta.get(key));
+		}
+	}
+
 	private void checkLinks(Resource resource, String[][] expectedLinks) {
 		assertNotNull(resource);
 		assertTrue("Wrong instance type of Resource: " + resource.getClass(), resource instanceof HTMLResource);
@@ -238,20 +256,6 @@ public class ExtractingParseObserverTest extends TestCase {
 			if (l.length > 2 && l[2] != null) {
 				checkAnchor(anchors, l[0], l[2]);
 			}
-		}
-	}
-
-	private void checkExtractHtmlLangAttribute(Resource resource, String... langAttributes)
-			throws JSONException {
-		assertNotNull(resource);
-		assertTrue("Wrong instance type of Resource: " + resource.getClass(), resource instanceof HTMLResource);
-		JSONArray metas = resource.getMetaData().getJSONObject("Head").getJSONArray("Metas");
-		assertNotNull(metas);
-		JSONObject meta = metas.getJSONObject(0);
-		for (int i = 0; i < langAttributes.length; i += 2) {
-			String key = langAttributes[i];
-			assertNotNull(meta.get(key));
-			assertEquals(meta.get(key), langAttributes[i+1]);
 		}
 	}
 
@@ -434,11 +438,21 @@ public class ExtractingParseObserverTest extends TestCase {
 		ResourceProducer producer = ProducerUtils.getProducer(getClass().getResource(testFileName).getPath());
 		ResourceFactoryMapper mapper = new ExtractingResourceFactoryMapper();
 		ExtractingResourceProducer extractor = new ExtractingResourceProducer(producer, mapper);
-		checkExtractHtmlLangAttribute(extractor.getNext(), "name", "HTML@/lang", "content", "en");
-		checkExtractHtmlLangAttribute(extractor.getNext(), "name", "HTML@/lang", "content", "zh-CN");
-		checkExtractHtmlLangAttribute(extractor.getNext(), "name", "HTML@/lang", "content", "cs-cz");
-		checkExtractHtmlLangAttribute(extractor.getNext(), "name", "HTML@/lang", "content", "en");
-		checkExtractHtmlLangAttribute(extractor.getNext(), "name", "HTML@/xml:lang", "content", "es-MX");
+		checkExtractedAttributes(extractor.getNext(), 1, 0, "name", "HTML@/lang", "content", "en");
+		checkExtractedAttributes(extractor.getNext(), 1, 0, "name", "HTML@/lang", "content", "zh-CN");
+		checkExtractedAttributes(extractor.getNext(), 1, 0, "name", "HTML@/lang", "content", "cs-cz");
+		checkExtractedAttributes(extractor.getNext(), 2, 0, "name", "HTML@/lang", "content", "en");
+		checkExtractedAttributes(extractor.getNext(), 1, 0, "name", "HTML@/xml:lang", "content", "es-MX");
+	}
+
+	public void testBodyMetaElements() throws ResourceParseException, IOException {
+		String testFileName = "meta-itemprop.warc";
+		ResourceProducer producer = ProducerUtils.getProducer(getClass().getResource(testFileName).getPath());
+		ResourceFactoryMapper mapper = new ExtractingResourceFactoryMapper();
+		ExtractingResourceProducer extractor = new ExtractingResourceProducer(producer, mapper);
+		Resource resource = extractor.getNext();
+		checkExtractedAttributes(resource, 2, 0, "name", "HTML@/lang", "content", "en");
+		checkExtractedAttributes(resource, 2, 1, "name", "robots", "content", "index,follow");
 	}
 
 	public void testHtmlParserEntityDecoding() {
