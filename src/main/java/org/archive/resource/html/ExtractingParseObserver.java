@@ -3,6 +3,7 @@ package org.archive.resource.html;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -110,6 +111,8 @@ public class ExtractingParseObserver implements ParseObserver {
 		extractors.put("AUDIO", new EmbedTagExtractor());
 		extractors.put("TRACK", new EmbedTagExtractor());
 		extractors.put("SOURCE", new EmbedTagExtractor());
+		// language from HTML root element
+		extractors.put("HTML", new HTMLTagExtractor());
 
 		globalHrefAttributes = new HashSet<String>();
 		globalHrefAttributes.add("background");
@@ -601,6 +604,23 @@ public class ExtractingParseObserver implements ParseObserver {
 		@Override
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
 			addBasicHrefs(data,node,"src");
+		}
+	}
+
+	private static class HTMLTagExtractor implements TagExtractor {
+		@Override
+		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
+			ArrayList<String> l = getAttrList(node, "lang", "xml:lang");
+			if(l != null) {
+				Iterator<String> it = l.iterator();
+				while (it.hasNext()) {
+					String name = it.next();
+					if (it.hasNext()) {
+						String lang = it.next();
+						data.addMeta("name", makePath("HTML", name), "content", lang);
+					}
+				}
+			}
 		}
 	}
 

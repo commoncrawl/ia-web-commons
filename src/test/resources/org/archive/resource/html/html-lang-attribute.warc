@@ -1,0 +1,106 @@
+WARC/1.0
+WARC-Type: response
+WARC-Date: 2024-12-05T10:47:02Z
+Content-Length: 169
+Content-Type: application/http; msgtype=response
+WARC-Target-URI: https://www.example.org/1
+WARC-Identified-Payload-Type: text/html
+
+HTTP/1.1 200 
+content-type: text/html; charset=UTF-8
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Test</title>
+</head>
+<body/>
+</html>
+
+
+
+WARC/1.0
+WARC-Type: response
+WARC-Date: 2024-12-05T10:47:02Z
+Content-Length: 185
+Content-Type: application/http; msgtype=response
+WARC-Target-URI: https://www.example.org/2
+WARC-Identified-Payload-Type: text/html
+
+HTTP/1.1 200 
+content-type: text/html; charset=UTF-8
+
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>Test</title>
+</head>
+<body/>
+</html>
+
+
+
+WARC/1.0
+WARC-Type: response
+WARC-Date: 2024-12-05T10:47:02Z
+Content-Length: 158
+Content-Type: application/http; msgtype=response
+WARC-Target-URI: https://www.example.org/3
+WARC-Identified-Payload-Type: text/html
+
+HTTP/1.1 200 
+content-type: text/html; charset=UTF-8
+
+<!DOCTYPE html>
+<html dir="ltr" lang="cs-cz">
+<head>
+	<title>Test</title>
+</head>
+<body/>
+</html>
+
+
+
+WARC/1.0
+WARC-Type: response
+WARC-Date: 2024-12-05T10:47:02Z
+Content-Length: 319
+Content-Type: application/http; msgtype=response
+WARC-Target-URI: https://www.example.org/4
+WARC-Identified-Payload-Type: text/html
+
+HTTP/1.1 200 
+content-type: text/html; charset=UTF-8
+
+<!DOCTYPE html>
+<html xmlns:fb="http://www.facebook.com/2008/fbml" xmlns:og="http://ogp.me/ns#" xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr" style="overflow-x: hidden !important;">
+<head>
+	<title>Test</title>
+</head>
+<body/>
+</html>
+
+
+
+WARC/1.0
+WARC-Type: response
+WARC-Date: 2024-12-05T10:47:02Z
+Content-Length: 189
+Content-Type: application/http; msgtype=response
+WARC-Target-URI: https://www.example.org/5
+WARC-Identified-Payload-Type: text/html
+
+HTTP/1.1 200 
+content-type: text/html; charset=UTF-8
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es-MX">
+<head>
+	<title>Test</title>
+</head>
+<body/>
+</html>
+
+
+
