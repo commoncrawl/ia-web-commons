@@ -179,6 +179,7 @@ public class ExtractingParseObserver implements ParseObserver {
 			attrName = attrName.toLowerCase(Locale.ROOT);
 			if (globalHrefAttributes.contains(attrName)) {
 				attrValue = decodeCharEnt(attrValue);
+				attrValue = trimDataUrl(attrValue);
 				data.addHref(PATH,makePath(name,attrName),"url",attrValue);
 			}
 		}
@@ -382,6 +383,7 @@ public class ExtractingParseObserver implements ParseObserver {
 			String val = node.getAttribute(attr);
 			if(val != null) {
 				val = decodeCharEnt(val);
+				val = trimDataUrl(val);
 				data.addHref(PATH,makePath(node.getTagName(),attr),"url",val);
 			}
 		}
@@ -389,16 +391,27 @@ public class ExtractingParseObserver implements ParseObserver {
 	
 	private static ArrayList<String> getAttrList(TagNode node, String... attrs) {
 		ArrayList<String> l = new ArrayList<String>();
+		boolean isOgImage = false;
 		for(String attr : attrs) {
 			String val = node.getAttribute(attr);
 			if(val != null) {
 				val = decodeCharEnt(val);
 				l.add(attr);
 				l.add(val);
+				if (attr.equals("property") && val.equals("og:image")) {
+					isOgImage = true;
+				}
 			}
 		}
 		if(l.size() == 0) {
 			return null;
+		}
+		if (isOgImage) {
+			// trim data: URLs in og:image metadata
+			int content = l.indexOf("content");
+			if (content > -1 && (content % 2) == 0) {
+				l.set(content + 1, trimDataUrl(l.get(content + 1)));
+			}
 		}
 		return l;
 	}
@@ -409,6 +422,7 @@ public class ExtractingParseObserver implements ParseObserver {
 		ArrayList<String> l = null;
 		if(url != null) {
 			url = decodeCharEnt(url);
+			url = trimDataUrl(url);
 			l = new ArrayList<String>();
 			l.add(PATH);
 			l.add(makePath(node.getTagName(),urlAttr));
@@ -442,6 +456,7 @@ public class ExtractingParseObserver implements ParseObserver {
 			for (Pattern pattern : jsOnClickUrlPatterns) {
 				String url = patternJSExtract(pattern, onclick);
 				if (url != null) {
+					url = trimDataUrl(url);
 					data.addHref(PATH, path, "url", url);
 				}
 			}
@@ -483,6 +498,7 @@ public class ExtractingParseObserver implements ParseObserver {
 			if(url != null) {
 				// got data:
 				url = decodeCharEnt(url);
+				url = trimDataUrl(url);
 				l.add(PATH);
 				l.add(makePath("A","href"));
 				l.add("url");
@@ -520,6 +536,7 @@ public class ExtractingParseObserver implements ParseObserver {
 			String url = node.getAttribute("href");
 			if(url != null) {
 				url = decodeCharEnt(url);
+				url = trimDataUrl(url);
 				ArrayList<String> l = new ArrayList<String>();
 				l.add(PATH);
 				l.add(makePath("AREA","href"));
@@ -583,6 +600,7 @@ public class ExtractingParseObserver implements ParseObserver {
 			String url = node.getAttribute("action");
 			if(url != null) {
 				url = decodeCharEnt(url);
+				url = trimDataUrl(url);
 				// got data:
 				l.add(PATH);
 				l.add(makePath("FORM","action"));
@@ -728,7 +746,8 @@ public class ExtractingParseObserver implements ParseObserver {
 			String url = m.group(1);
 			url = cssUrlTrimPattern.matcher(url).replaceAll("");
 			if (!url.isEmpty()) {
-				data.addHref("path","STYLE/#text","href", url);
+				url = trimDataUrl(url);
+				data.addHref("path", "STYLE/#text", "href", url);
 			}
 		}
 	}
@@ -756,5 +775,37 @@ public class ExtractingParseObserver implements ParseObserver {
 			e.printStackTrace();
 			return text;
 		}
+	}
+
+	/**
+	 * Trim data from
+	 * <a href="https://www.rfc-editor.org/rfc/rfc2397#section-2">data URLs</a>.
+	 * 
+	 * Any data (after the comma) is trimmed from a data URL. If no comma is
+	 * found within the first 128 characters of the URL, the URL is trimmed to
+	 * 128 characters.
+	 * 
+	 * @param url
+	 *            URL to be trimmed
+	 * @return
+	 */
+	public static String trimDataUrl(String url) {
+		if (url.startsWith("data:")) {
+			int posComma = url.indexOf(',', 5);
+			if (posComma == -1) {
+				// no comma, trim to 128 characters if necessary
+				if (url.length() > 128) {
+					return url.substring(0, 128);
+				}
+				return url;
+			} else if (posComma > 128) {
+				return url.substring(0, 128);
+			} else if (posComma == 6) {
+				return "data:,";
+			} else if (posComma > 6) {
+				return url.substring(0, posComma + 1);
+			}
+		}
+		return url;
 	}
 }
