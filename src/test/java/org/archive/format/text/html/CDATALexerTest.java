@@ -1,10 +1,7 @@
 package org.archive.format.text.html;
 
-import org.archive.format.text.html.CDATALexer;
-import org.archive.format.text.html.NodeUtils;
 import org.htmlparser.Node;
 import org.htmlparser.lexer.Page;
-//import org.htmlparser.nodes.RemarkNode;
 import org.htmlparser.nodes.TagNode;
 import org.htmlparser.nodes.TextNode;
 import org.htmlparser.util.ParserException;
@@ -72,20 +69,38 @@ public class CDATALexerTest extends TestCase {
 		assertFalse(l.inJS());
 		assertTrue(NodeUtils.isCloseTagNodeNamed(n, "STYLE"));
 	}
+
+	public void testInCSSEmpty() throws ParserException {
+		l = makeLexer("<style></style>");
+		assertFalse(l.inCSS());
+		assertFalse(l.inJS());
+		n = l.nextNode();
+		assertFalse(l.inCSS());
+		assertFalse(l.inJS());
+		assertTrue(NodeUtils.isNonEmptyOpenTagNodeNamed(n, "STYLE"));
+		n = l.nextNode();
+		assertFalse(l.inCSS());
+		assertFalse(l.inJS());
+		assertTrue(NodeUtils.isCloseTagNodeNamed(n, "STYLE"));
+	}
+
+	public void testInCSSBachelorTag() throws ParserException {
+		l = makeLexer("<style />");
+		assertFalse(l.inCSS());
+		assertFalse(l.inJS());
+		n = l.nextNode();
+		assertFalse(l.inCSS());
+		assertFalse(l.inJS());
+		assertTrue(NodeUtils.isTagNode(n));
+		assertTrue(((TagNode) n).isEmptyXmlTag());
+		assertEquals(((TagNode) n).getTagName(), "STYLE");
+		n = l.nextNode();
+		assertFalse(l.inCSS());
+		assertFalse(l.inJS());
+		assertNull(n);
+	}
 	
 	public void testInJSComment() throws ParserException {
-		
-//		dumpParse("<script>//<!--\n foo bar baz\n //--></script>");
-//		dumpParse("<script><!-- foo bar baz --></script>");
-//		dumpParse("<script>//<!-- foo bar baz --></script>");
-//		dumpParse("<script><!-- foo bar baz //--></script>");
-//		dumpParse("<script>\n//<!-- foo bar baz\n //--></script>");
-//		dumpParse("<script> if(1 < 2) { foo(); } </script>");
-//		dumpParse("<script> if(1 <n) { foo(); } </script>");
-//		dumpParse("<script> document.write(\"<b>bold</b>\"); </script>");
-//		dumpParse("<script> document.write(\"<script>bold</script>\"); </script>");
-//		dumpParse("<script> <![CDATA[\n if(i<n) { foo() } // content of your Javascript goes here \n ]]> </script>");
-
 		assertJSContentWorks("//<!--\n foo bar baz\n //-->");
 		assertJSContentWorks("<!-- foo bar baz -->");
 		assertJSContentWorks("//<!-- foo bar baz -->");
@@ -94,9 +109,22 @@ public class CDATALexerTest extends TestCase {
 		assertJSContentWorks("if(1 < 2) { foo(); } ");
 		assertJSContentWorks("if(1 <n) { foo(); } ");
 		assertJSContentWorks("document.write(\"<b>bold</b>\"); ");
-		assertJSContentWorks("document.write(\"<script>bold</script>\"); ");
+		assertJSContentWorks("document.write(\"<script>bold<\\/script>\"); ");
 		assertJSContentWorks("<![CDATA[\n if(i<n) { foo() } // a comment \n ]]> ");
-
+		assertJSContentWorks("var script = '<script>alert(\"hello, world!\")<\\/script>'; console.log(script); ");
+		assertJSContentWorks("\n"
+				+ "        var _hmt = _hmt || [];\n"
+				+ "        (function() {\n"
+				+ "        var hm = document.createElement(\"script\");\n"
+				+ "        hm.src = \"https://#/hm.js?aba99f7fd4116f6c8c3d1650e8f8ec17\";\n"
+				+ "        var s = document.getElementsByTagName(\"script\")[0]; \n"
+				+ "        s.parentNode.insertBefore(hm, s);\n"
+				+ "        })();\n"
+				+ "    ");
+		/*
+		 * The parser fails on unfinished HTML comments inside script or style.
+		 */
+		// assertJSContentWorks("<!-- foo bar baz ");
 	}
 	
 	private void assertJSContentWorks(String js) throws ParserException {

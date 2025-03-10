@@ -59,10 +59,10 @@ public class ExtractingParseObserver implements ParseObserver {
 	private final static int MAX_TEXT_LEN = 128;
 
 	private final static String[] BLOCK_ELEMENTS = { "address", "article", "aside", "blockquote", "body", "br",
-			"button", "canvas", "caption", "col", "colgroup", "dd", "div", "dl", "dt", "embed", "fieldset",
+			"button", "canvas", "caption", "center", "col", "colgroup", "dd", "div", "dl", "dt", "embed", "fieldset",
 			"figcaption", "figure", "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "header", "hgroup", "hr",
-			"li", "map", "noscript", "object", "ol", "output", "p", "pre", "progress", "section", "table", "tbody",
-			"textarea", "tfoot", "th", "thead", "title", "tr", "ul", "video" };
+			"li", "map", "noframes", "noscript", "object", "ol", "output", "p", "pre", "progress", "section", "table",
+			"tbody", "textarea", "tfoot", "th", "thead", "title", "tr", "ul", "video" };
 	private static final Set<String> blockElements;
 	/* inline elements which content is not melted with surrounding words */
 	private final static String[] INLINE_ELEMENTS_SPACING = { "address", "cite", "details", "datalist", "iframe", "img",
