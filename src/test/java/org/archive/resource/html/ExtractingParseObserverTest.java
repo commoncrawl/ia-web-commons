@@ -60,18 +60,24 @@ public class ExtractingParseObserverTest extends TestCase {
 	}
 
 	public void testHandleStyleNode() throws Exception {
-		String[][] tests = {
-				{""},
-				{"url(foo.gif)","foo.gif"},
-				{"url('foo.gif')","foo.gif"},
-				{"url(\"foo.gif\")","foo.gif"},
-				{"url(\\\"foo.gif\\\")","foo.gif"},
-				{"url(\\'foo.gif\\')","foo.gif"},
-				{"url(''foo.gif'')","foo.gif"},
-				{"url(  foo.gif  )","foo.gif"},
-				{"url('''')"},
-				{"url('foo.gif'')","foo.gif"},
-				};
+		String[][] tests = { //
+				{""}, //
+				{"url(foo.gif)","foo.gif"}, //
+				{"url('foo.gif')","foo.gif"}, //
+				{"url(\"foo.gif\")","foo.gif"}, //
+				{"url(\\\"foo.gif\\\")","foo.gif"}, //
+				{"url(\\'foo.gif\\')","foo.gif"}, //
+				{"url(''foo.gif'')","foo.gif"}, //
+				{"url(  foo.gif  )","foo.gif"}, //
+				{"url('''')"}, //
+				{"url('foo.gif'')","foo.gif"}, //
+				{"url('data:image/png;base64,iVBORw0KG9Inhtc')","data:image/png;base64,"}, //
+				{"url(\"data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2080%2080%22%3E%3C/svg%3E\")",
+					"data:image/svg+xml," },
+				// would fail: the pattern extractor stops at the first white space in the data URL
+//				{"background-image: url('data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 40 40\"%3E%3Ccircle r=\"18\" cx=\"20\" cy=\"20\" fill=\"red\" /%3E%3C/svg%3E');\n",
+//						"data:image/svg+xml," },
+		};
 		for(String[] testa : tests) {
 			checkExtract(testa);
 		}
@@ -125,7 +131,7 @@ public class ExtractingParseObserverTest extends TestCase {
 		}
 		JSONArray a = md.optJSONArray("Links");
 		if(data.length > 1) {
-			assertNotNull(a);
+			assertNotNull("CSS link extraction failed for <" + css + ">", a);
 			assertEquals(data.length-1,a.length());
 			for(int i = 1; i < data.length; i++) {
 				Object o = a.optJSONObject(i-1);
@@ -531,4 +537,22 @@ public class ExtractingParseObserverTest extends TestCase {
 		}
 	}
 
+	public void testTrimDataURLs() {
+		String[][] urls = { //
+				{ "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA", "data:image/png;base64," }, //
+				{ "data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2080%2080%22%3E%3C/svg%3E",
+						"data:image/svg+xml," }, //
+				{ "data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 40 40\"%3E%3Ccircle r=\"18\" cx=\"20\" cy=\"20\" fill=\"red\" /%3E%3C/svg%3E",
+						"data:image/svg+xml," }, //
+				{ "data:image/svg+xml;utf9,<svg%20version='1.1'%20xmlns='http://www.w3.org/2000/svg'><filter%20id='blur'><feGaussianBlur%20stdDeviation='10'%20/></filter></svg>#blur",
+						"data:image/svg+xml;utf9," }, //
+				{ "data:application/font-woff;charset=utf-8;base64,d09GRgABAAAAAAUQAA0AAAAA",
+						"data:application/font-woff;charset=utf-8;base64," }, //
+				{ "data:text/plain;charset=iso-8859-7,%be%fg%be", "data:text/plain;charset=iso-8859-7," }, //
+		};
+		for (String[] url : urls) {
+			String u = ExtractingParseObserver.trimDataUrl(url[0]);
+			assertEquals("Entity " + url[0] + " not properly trimmed", url[1], u);
+		}
+	}
 }
