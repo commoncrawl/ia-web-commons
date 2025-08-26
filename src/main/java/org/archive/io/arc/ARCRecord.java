@@ -32,29 +32,30 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.StatusLine;
-import org.apache.commons.httpclient.util.EncodingUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.archive.format.http.HttpHeader;
 import org.archive.io.ArchiveRecord;
 import org.archive.io.ArchiveRecordHeader;
+import org.archive.io.HeaderedArchiveRecord;
 import org.archive.io.RecoverableIOException;
 import org.archive.util.InetAddressUtil;
 import org.archive.util.LaxHttpParser;
 import org.archive.util.TextUtils;
+
+import static org.archive.format.arc.ARCConstants.*;
 
 /**
  * An ARC file record.
  * Does not compass the ARCRecord metadata line, just the record content.
  * @author stack
  */
-public class ARCRecord extends ArchiveRecord implements ARCConstants {
+public class ARCRecord extends ArchiveRecord {
     /**
-     * Http status line object.
+     * Http status code.
      * 
-     * May be null if record is not http.
+     * May be -1 if record is not http.
      */
-    private StatusLine httpStatus = null;
+    private int statusCode = -1;
 
     /**
      * Http header bytes.
@@ -69,7 +70,7 @@ public class ARCRecord extends ArchiveRecord implements ARCConstants {
      * 
      * Only populated after reading of headers.
      */
-    private Header [] httpHeaders = null;
+    private HttpHeader[] httpHeaders = null;
 
     /**
      * Array of field names.
@@ -589,9 +590,9 @@ public class ARCRecord extends ArchiveRecord implements ARCConstants {
                 "Failed to read http status where one was expected: " 
                 + ((statusBytes == null) ? "" : new String(statusBytes)));
         	}
-        
-        	statusLine = EncodingUtil.getString(statusBytes, 0,
-        			statusBytes.length - eolCharCount, ARCConstants.DEFAULT_ENCODING);
+
+        	statusLine = new String(statusBytes, 0,
+        			statusBytes.length - eolCharCount, DEFAULT_ENCODING);
         	
         	// If a null or DELETED break immediately
         	if ((statusLine == null) || statusLine.startsWith("DELETED")) {
@@ -600,7 +601,7 @@ public class ARCRecord extends ArchiveRecord implements ARCConstants {
         	
         	// If it's actually the status line, break, otherwise continue skipping any
         	// previous header values
-        	if (!statusLine.contains(":") && StatusLine.startsWithHTTP(statusLine)) {
+        	if (!statusLine.contains(":") && statusLine.trim().startsWith("HTTP")) {
         		break;
         	}
         	
@@ -613,7 +614,7 @@ public class ARCRecord extends ArchiveRecord implements ARCConstants {
         }
         
         if ((statusLine == null) ||
-                !StatusLine.startsWithHTTP(statusLine)) {
+                !statusLine.trim().startsWith("HTTP")) {
             if (statusLine.startsWith("DELETED")) {
                 // Some old ARCs have deleted records like following:
                 // http://vireo.gatech.edu:80/ebt-bin/nph-dweb/dynaweb/SGI_Developer/SGITCL_PG/@Generic__BookTocView/11108%3Btd%3D2 130.207.168.42 19991010131803 text/html 29202
@@ -629,13 +630,12 @@ public class ARCRecord extends ArchiveRecord implements ARCConstants {
             }
         }
 
-        try {
-        	this.httpStatus = new StatusLine(statusLine);
-        } catch(IOException e) {
-        	logger.warning(e.getMessage() + " at offset: " + h.getOffset());
-        	this.errors.add(ArcRecordErrors.HTTP_STATUS_LINE_EXCEPTION);
+        this.statusCode = HeaderedArchiveRecord.parseStatusCode(statusLine.trim());
+        if (statusCode == -1) {
+            logger.warning("Bad status line at offset: " + h.getOffset());
+            this.errors.add(ArcRecordErrors.HTTP_STATUS_LINE_EXCEPTION);
         }
-        
+
         // Save off all bytes read.  Keep them as bytes rather than
         // convert to strings so we don't have to worry about encodings
         // though this should never be a problem doing http headers since
@@ -683,8 +683,7 @@ public class ARCRecord extends ArchiveRecord implements ARCConstants {
         // Read the status line.  Don't let it into the parseHeaders function.
         // It doesn't know what to do with it.
         bais.read(statusBytes, 0, statusBytes.length);
-        this.httpHeaders = LaxHttpParser.parseHeaders(bais,
-            ARCConstants.DEFAULT_ENCODING);
+        this.httpHeaders = LaxHttpParser.parseHeaders(bais, DEFAULT_ENCODING);
         this.getMetaData().setStatusCode(Integer.toString(getStatusCode()));
         bais.reset();
         return bais;
@@ -706,7 +705,7 @@ public class ARCRecord extends ArchiveRecord implements ARCConstants {
      * @return Status code.
      */
     public int getStatusCode() {
-        return (this.httpStatus == null)? -1: this.httpStatus.getStatusCode();
+        return statusCode;
     }
     
     /**
@@ -735,7 +734,7 @@ public class ARCRecord extends ArchiveRecord implements ARCConstants {
     /**
      * @return http headers (Only available after header has been read).
      */
-    public Header [] getHttpHeaders() {
+    public HttpHeader[] getHttpHeaders() {
         return this.httpHeaders;
     }
     

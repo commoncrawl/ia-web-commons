@@ -25,7 +25,11 @@ import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 
-import org.archive.util.TmpDirTestCase;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 /**
@@ -33,17 +37,9 @@ import org.archive.util.TmpDirTestCase;
  *
  * @author gojomo
  */
-public class RecordingInputStreamTest extends TmpDirTestCase
-{
-
-
-    /*
-     * @see TmpDirTestCase#setUp()
-     */
-    protected void setUp() throws Exception
-    {
-        super.setUp();
-    }
+public class RecordingInputStreamTest {
+    @TempDir
+    File tempDir;
 
     /**
      * Test readFullyOrUntil soft (no exception) and hard (exception) 
@@ -53,10 +49,11 @@ public class RecordingInputStreamTest extends TmpDirTestCase
      * @throws InterruptedException
      * @throws RecorderTimeoutException
      */
+    @Test
     public void testReadFullyOrUntil() throws RecorderTimeoutException, IOException, InterruptedException
     {
         RecordingInputStream ris = new RecordingInputStream(16384, (new File(
-                getTmpDir(), "testReadFullyOrUntil").getAbsolutePath()));
+                tempDir, "testReadFullyOrUntil").getAbsolutePath()));
         ByteArrayInputStream bais = new ByteArrayInputStream(
                 "abcdefghijklmnopqrstuvwxyz".getBytes());
         // test soft max
@@ -67,7 +64,7 @@ public class RecordingInputStreamTest extends TmpDirTestCase
         ReplayInputStream res = ris.getReplayInputStream();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         res.readFullyTo(baos);
-        assertEquals("soft max cutoff","abcdefg",new String(baos.toByteArray()));
+        assertEquals("abcdefg",new String(baos.toByteArray()),"soft max cutoff");
         // test hard max
         bais.reset();
         baos.reset();
@@ -79,25 +76,26 @@ public class RecordingInputStreamTest extends TmpDirTestCase
         } catch (RecorderLengthExceededException ex) {
             exceptionThrown = true;
         }
-        assertTrue("hard max exception",exceptionThrown);
+        assertTrue(exceptionThrown,"hard max exception");
         ris.close();
         res = ris.getReplayInputStream();
         res.readFullyTo(baos);
-        assertEquals("hard max cutoff","abcdefghijk",
-                new String(baos.toByteArray()));
+        assertEquals("abcdefghijk",new String(baos.toByteArray()),
+                "hard max cutoff");
         // test timeout
         PipedInputStream pin = new PipedInputStream(); 
         PipedOutputStream pout = new PipedOutputStream(pin); 
         ris.open(pin);
         exceptionThrown = false; 
         trickle("abcdefghijklmnopqrstuvwxyz".getBytes(),pout);
+        int timeout = 200;
         try {
-            ris.setLimits(0,5000,0);
+            ris.setLimits(0, timeout,0);
             ris.readFullyOrUntil(0);
         } catch (RecorderTimeoutException ex) {
             exceptionThrown = true;
         }
-        assertTrue("timeout exception",exceptionThrown);
+        assertTrue(exceptionThrown,"timeout exception");
         ris.close();
         // test rate limit
         bais = new ByteArrayInputStream(new byte[1024*2*5]);
@@ -107,7 +105,7 @@ public class RecordingInputStreamTest extends TmpDirTestCase
         ris.readFullyOrUntil(0);
         long endTime = System.currentTimeMillis(); 
         long duration = endTime - startTime; 
-        assertTrue("read too fast: "+duration,duration>=5000);
+        assertTrue(duration>= timeout,"read too fast: "+duration);
         ris.close();
     }
 
@@ -116,7 +114,7 @@ public class RecordingInputStreamTest extends TmpDirTestCase
             public void run() {
                 try {
                     for (int i = 0; i < bytes.length; i++) {
-                        Thread.sleep(1000);
+                        Thread.sleep(200);
                         pout.write(bytes[i]);
                     }
                     pout.close();
@@ -128,5 +126,17 @@ public class RecordingInputStreamTest extends TmpDirTestCase
             }
         }.start();
         
+    }
+
+    @Test
+    public void testAsOutputStream() throws IOException {
+        RecordingInputStream ris = new RecordingInputStream(16384, (new File(
+                tempDir, "testAsOutputStream").getAbsolutePath()));
+        ris.open(null);
+        ris.asOutputStream().write("hello".getBytes());
+        ris.close();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ris.getReplayInputStream().readFullyTo(baos);
+        assertEquals("hello", baos.toString());
     }
 }

@@ -33,6 +33,7 @@ import java.util.logging.Logger;
 import com.github.openjson.JSONArray;
 import com.github.openjson.JSONException;
 import com.github.openjson.JSONObject;
+import org.archive.format.ArchiveFileConstants;
 
 /**
  * Pool of Writers.
@@ -215,7 +216,7 @@ public abstract class WriterPool {
         // gets attention.
         File file = f.getFile();
         file.renameTo(new File(file.getAbsoluteFile() +
-                WriterPoolMember.INVALID_SUFFIX));
+                ArchiveFileConstants.INVALID_SUFFIX));
     }
 
 	/**
