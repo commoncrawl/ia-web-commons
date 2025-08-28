@@ -29,11 +29,14 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpParser;
+import org.archive.format.http.HttpHeader;
 import org.archive.io.ArchiveRecord;
 import org.archive.io.ArchiveRecordHeader;
 import org.archive.util.LaxHttpParser;
+
+import static org.archive.format.ArchiveFileConstants.ABSOLUTE_OFFSET_KEY;
+import static org.archive.format.ArchiveFileConstants.READER_IDENTIFIER_FIELD_KEY;
+import static org.archive.format.warc.WARCConstants.*;
 
 
 /**
@@ -41,7 +44,7 @@ import org.archive.util.LaxHttpParser;
  *
  * @author stack
  */
-public class WARCRecord extends ArchiveRecord implements WARCConstants {
+public class WARCRecord extends ArchiveRecord {
     private Pattern WHITESPACE = Pattern.compile("\\s");
     
     /**
@@ -123,7 +126,7 @@ public class WARCRecord extends ArchiveRecord implements WARCConstants {
         // keep count of bytes read, digest and fail properly if EOR too soon...
         // We don't want digesting while reading Headers.
         // 
-        Header [] h = LaxHttpParser.parseHeaders(in, WARC_HEADER_ENCODING);
+        HttpHeader[] h = LaxHttpParser.parseHeaders(in, WARC_HEADER_ENCODING);
         for (int i = 0; i < h.length; i++) {
             m.put(h[i].getName(), h[i].getValue());
         }

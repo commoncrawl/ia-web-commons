@@ -31,9 +31,11 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 import org.archive.io.ArchiveReader;
 import org.archive.io.ArchiveRecord;
+
+import static org.archive.format.warc.WARCConstants.*;
 
 /**
  * WARCReader.
@@ -41,7 +43,7 @@ import org.archive.io.ArchiveRecord;
  * @author stack
  * @version $Date: 2006-11-27 18:03:03 -0800 (Mon, 27 Nov 2006) $ $Version$
  */
-public class WARCReader extends ArchiveReader implements WARCConstants {
+public class WARCReader extends ArchiveReader {
     protected WARCReader() {
         super();
     }

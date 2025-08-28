@@ -32,10 +32,9 @@ import java.util.logging.Logger;
 import java.util.zip.DeflaterInputStream;
 import java.util.zip.GZIPInputStream;
 
-import org.apache.commons.httpclient.ChunkedInputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.archive.io.GenericReplayCharSequence;
 import org.archive.io.RecordingInputStream;
 import org.archive.io.RecordingOutputStream;
@@ -351,16 +350,6 @@ public class Recorder {
      */
     public String getContentEncoding() {
         return this.contentEncoding;
-    }
-
-    
-    /**
-     * @return
-     * @throws IOException
-     * @deprecated use getContentReplayCharSequence
-     */
-    public ReplayCharSequence getReplayCharSequence() throws IOException {
-        return getContentReplayCharSequence();
     }
     
     /**

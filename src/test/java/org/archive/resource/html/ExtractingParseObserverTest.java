@@ -22,13 +22,16 @@ import com.github.openjson.JSONObject;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
-public class ExtractingParseObserverTest extends TestCase {
+import static org.junit.jupiter.api.Assertions.*;
+
+public class ExtractingParseObserverTest {
 
 	private static final Logger LOG =
 			Logger.getLogger(ExtractingParseObserverTest.class.getName());
 
+	@Test
 	public void testHandleStyleNodeExceptions() throws Exception {
 		String[] tests = {
 				"some css",
@@ -59,6 +62,7 @@ public class ExtractingParseObserverTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testHandleStyleNode() throws Exception {
 		String[][] tests = { //
 				{""}, //
@@ -87,6 +91,7 @@ public class ExtractingParseObserverTest extends TestCase {
 	 * Test whether the pattern matcher does extract nothing and also does not
 	 * not hang-up if an overlong CSS link is truncated.
 	 */
+	@Test
 	public void testHandleStyleNodeNoHangupTruncated() throws Exception {
 		StringBuilder sb = new StringBuilder();
 		sb.append("url(");
@@ -131,40 +136,39 @@ public class ExtractingParseObserverTest extends TestCase {
 		}
 		JSONArray a = md.optJSONArray("Links");
 		if(data.length > 1) {
-			assertNotNull("CSS link extraction failed for <" + css + ">", a);
-			assertEquals(data.length-1,a.length());
+			assertNotNull(a, "CSS link extraction failed for <" + css + ">");
+			assertEquals(data.length-1, a.length());
 			for(int i = 1; i < data.length; i++) {
 				Object o = a.optJSONObject(i-1);
 				
 				assertTrue(o instanceof JSONObject);
 				JSONObject jo = (JSONObject) o;
-				assertEquals("CSS link extraction failed for <" + css + ">",
-						data[i], jo.getString("href"));
+				assertEquals(data[i], jo.getString("href"),
+						"CSS link extraction failed for <" + css + ">");
 			}
 		} else {
-			assertNull("Expected no extracted link for <" + css + ">", a);
+			assertNull(a, "Expected no extracted link for <" + css + ">");
 		}
 	}
 	
 	private void checkLink(Multimap<String,String> links, String url, String path) {
-		assertTrue("Link with URL " + url + " not found in [" + String.join(", ", links.keySet()) + "]",
-				links.containsKey(url));
-		assertTrue("Wrong path " + path + " for " + url, links.get(url).contains(path));
+		assertTrue(links.containsKey(url), "Link with URL " + url + " not found");
+		assertTrue(links.get(url).contains(path), "Wrong path " + path + " for " + url);
 	}
 
-	private void checkAnchor(Multimap<String,String> anchors, String url, String anchor) {
-		assertTrue("Anchor for URL " + url + " not found in [" + String.join(", ", anchors.keySet()) + "]",
-				anchors.containsKey(url));
-		assertTrue("Wrong anchor text " + anchor + " for " + url, anchors.get(url).contains(anchor));
+	private void checkAnchor(Multimap<String, String> anchors, String url, String anchor) {
+		assertTrue(anchors.containsKey(url),
+				"Anchor for URL " + url + " not found in [" + String.join(", ", anchors.keySet()) + "]");
+		assertTrue(anchors.get(url).contains(anchor), "Wrong anchor text " + anchor + " for " + url);
 	}
 
 	private void checkTitle(Resource resource, String title) {
 		assertNotNull(resource);
-		assertTrue("Wrong instance type of Resource: " + resource.getClass(), resource instanceof HTMLResource);
+		assertInstanceOf(HTMLResource.class, resource, "Wrong instance type of Resource: " + resource.getClass());
 		JSONObject head = resource.getMetaData().optJSONObject("Head");
 		if (title != null) {
 			assertNotNull(head);
-			assertTrue("No title found", head.has(ResourceConstants.HTML_TITLE));
+			assertTrue(head.has(ResourceConstants.HTML_TITLE), "No title found");
 			assertEquals(title, head.get(ResourceConstants.HTML_TITLE));
 		} else {
 			assertFalse(head.has(ResourceConstants.HTML_TITLE));
@@ -174,7 +178,7 @@ public class ExtractingParseObserverTest extends TestCase {
 	private void checkExtractedAttributes(Resource resource, int metaElements, int metaElementIndex,
 			String... attributes) throws JSONException {
 		assertNotNull(resource);
-		assertTrue("Wrong instance type of Resource: " + resource.getClass(), resource instanceof HTMLResource);
+		assertInstanceOf(HTMLResource.class, resource, "Wrong instance type of Resource: " + resource.getClass());
 		JSONArray metas = resource.getMetaData().getJSONObject("Head").getJSONArray("Metas");
 		assertNotNull(metas);
 		if (metaElements > -1) {
@@ -191,7 +195,7 @@ public class ExtractingParseObserverTest extends TestCase {
 
 	private void checkLinks(Resource resource, String[][] expectedLinks) {
 		assertNotNull(resource);
-		assertTrue("Wrong instance type of Resource: " + resource.getClass(), resource instanceof HTMLResource);
+        assertInstanceOf(HTMLResource.class, resource, "Wrong instance type of Resource: " + resource.getClass());
 		MetaData md = resource.getMetaData();
 		LOG.info(md.toString());
 		Multimap<String, String> links = ArrayListMultimap.create();
@@ -255,7 +259,7 @@ public class ExtractingParseObserverTest extends TestCase {
 				}
 			}
 		}
-		assertEquals("Unexpected number of links", expectedLinks.length, links.size());
+		assertEquals(expectedLinks.length, links.size(), "Unexpected number of links");
 		for (String[] l : expectedLinks) {
 			checkLink(links, l[0], l[1]);
 			if (l.length > 2 && l[2] != null) {
@@ -264,6 +268,7 @@ public class ExtractingParseObserverTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testLinkExtraction() throws ResourceParseException, IOException {
 		String testFileName = "link-extraction-test.warc";
 		ResourceProducer producer = ProducerUtils.getProducer(getClass().getResource(testFileName).getPath());
@@ -406,7 +411,7 @@ public class ExtractingParseObserverTest extends TestCase {
 		extractor.getNext(); // skip warcinfo record
 		Resource resource = extractor.getNext();
 		assertNotNull(resource);
-		assertTrue("Wrong instance type of Resource: " + resource.getClass(), resource instanceof HTMLResource);
+		assertInstanceOf(HTMLResource.class, resource, "Wrong instance type of Resource: " + resource.getClass());
 		checkTitle(resource, "White space and paragraph breaks when converting HTML to text");
 		String text = resource.getMetaData().getString(ResourceConstants.HTML_TEXT);
 		System.out.println(text);
@@ -532,7 +537,7 @@ public class ExtractingParseObserverTest extends TestCase {
 				decoded = ExtractingParseObserver.decodeCharEnt(ent[0], Boolean.valueOf(ent[2]));
 			}
 			if (ent[1] != null) {
-				assertEquals("Entity " + ent[0] + " not properly decoded", ent[1], decoded);
+				assertEquals(ent[1], decoded, "Entity " + ent[0] + " not properly decoded");
 			}
 		}
 	}
@@ -552,7 +557,7 @@ public class ExtractingParseObserverTest extends TestCase {
 		};
 		for (String[] url : urls) {
 			String u = ExtractingParseObserver.trimDataUrl(url[0]);
-			assertEquals("Entity " + url[0] + " not properly trimmed", url[1], u);
+			assertEquals(url[1], u, "Entity " + url[0] + " not properly trimmed");
 		}
 	}
 }
