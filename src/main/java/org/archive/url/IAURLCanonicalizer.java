@@ -142,15 +142,11 @@ public class IAURLCanonicalizer implements URLCanonicalizer, CanonicalizerConsta
 	}
 	
 	
-	public static final Pattern WWWN_PATTERN = Pattern.compile("^www\\d*\\.");
+	public static final Pattern WWWN_PATTERN = Pattern.compile("(^www\\d*\\.).+\\.");
 	public static String massageHost(String host) {
-		while(true) {
-			Matcher m = WWWN_PATTERN.matcher(host);
-			if(m.find()) {
-				host = host.substring(m.group(0).length());
-			} else {
-				break;
-			}
+		Matcher m = WWWN_PATTERN.matcher(host);
+		if(m.find()) {
+			host = host.substring(m.group(1).length());
 		}
 		return host;
 	}

@@ -47,9 +47,12 @@ public class IAURLCanonicalizerTest {
 
 	@Test
 	public void testMassageHost() {
+		assertEquals("www.com",IAURLCanonicalizer.massageHost("www.com"));
+		assertEquals("www3288.com",IAURLCanonicalizer.massageHost("www3288.com"));
 		assertEquals("foo.com",IAURLCanonicalizer.massageHost("foo.com"));
 		assertEquals("foo.com",IAURLCanonicalizer.massageHost("www.foo.com"));
 		assertEquals("foo.com",IAURLCanonicalizer.massageHost("www12.foo.com"));
+		assertEquals("www.foo.com",IAURLCanonicalizer.massageHost("www12.www.foo.com"));
 		assertEquals("www2foo.com",IAURLCanonicalizer.massageHost("www2foo.com"));
 		assertEquals("www2foo.com",IAURLCanonicalizer.massageHost("www2.www2foo.com"));
 	}
