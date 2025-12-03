@@ -5,10 +5,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.net.UnknownHostException;
 import java.util.Date;
+import java.util.Locale;
 
 import org.archive.format.gzip.GZIPMemberWriter;
 import org.archive.format.gzip.GZIPMemberWriterCommittedOutputStream;
@@ -28,13 +28,14 @@ import java.net.InetAddress;
 
 import java.util.logging.Logger;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class WATExtractorOutput implements ExtractorOutput {
 	WARCRecordWriter recW;
 	private boolean wroteFirst;
 	private GZIPMemberWriter gzW;
 	private static int DEFAULT_BUFFER_RAM = 1024 * 1024;
 	private int bufferRAM = DEFAULT_BUFFER_RAM;
-	private final static Charset UTF8 = Charset.forName("UTF-8");
 	private String outputFile;
 	
 	private static final Logger LOG = Logger.getLogger(WATExtractorOutput.class.getName());
@@ -54,6 +55,7 @@ public class WATExtractorOutput implements ExtractorOutput {
 		return new GZIPMemberWriterCommittedOutputStream(gzW,bufferRAM);
 	}
 
+	@Override
 	public void output(Resource resource) throws IOException {
 		StreamCopy.readToEOF(resource.getInputStream());
 		MetaData top = resource.getMetaData().getTopMetaData();
@@ -159,7 +161,7 @@ public class WATExtractorOutput implements ExtractorOutput {
 		String capDateString = extractOrIO(md, "Envelope.ARC-Header-Metadata.Date");
 		String filename = extractOrIO(md, "Container.Filename");
 		String offset = extractOrIO(md, "Container.Offset");
-		String recId = String.format("<urn:arc:%s:%s>",filename,offset);
+		String recId = String.format(Locale.ROOT, "<urn:arc:%s:%s>",filename,offset);
 		writeWARCMDRecord(recOut,md,targetURI,capDateString,recId);
 	}
 
@@ -183,7 +185,7 @@ public class WATExtractorOutput implements ExtractorOutput {
 
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
-		OutputStreamWriter osw = new OutputStreamWriter(bos, UTF8);
+		OutputStreamWriter osw = new OutputStreamWriter(bos, UTF_8);
 		String contents = md.toString();
 		osw.write(contents, 0, contents.length());
 		osw.flush();
