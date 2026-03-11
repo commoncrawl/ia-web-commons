@@ -668,7 +668,7 @@ public class ExtractingParseObserver implements ParseObserver {
 	private static class LinkTagExtractor implements TagExtractor {
 		@Override
 		public void extract(HTMLMetaData data, TagNode node, ExtractingParseObserver obs) {
-			ArrayList<String> l = getAttrListUrl(node,"href","rel","type");
+			ArrayList<String> l = getAttrListUrl(node,"href","rel","type","hreflang");
 			if(l != null) {
 				data.addLink(l);
 			}
