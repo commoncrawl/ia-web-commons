@@ -1,6 +1,30 @@
 Unreleased
 ----------
 
+3.0.4 (2026-06-02)
+------------------
+
+### Fixes
+
+* WAT extractor not to fail on metadata records without WARC-Target-URI [#150](https://github.com/iipc/webarchive-commons/pull/150)
+
+### Dependency upgrades
+
+* **commons-codec**: 1.21.0 → 1.22.0
+* **commons-io**: 2.21.0 → 2.22.0
+* **guava**: 33.5.0-jre → 33.6.0-jre
+* **hadoop** (hadoop-common, hadoop-mapreduce-client-core): 3.4.2 → 3.4.3
+
+3.0.3 (2025-02-06)
+------------------
+
+### Dependency upgrades
+
+* **commons-codec**: 1.20.0 → 1.21.0
+* **commons-lang3**: 3.19.0 → 3.20.0
+* **json**: 20250517 → 20251224
+* **junit-jupiter**: 5.14.1 → 5.14.2
+
 3.0.2 (2025-11-14)
 ------------------
 
